@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YOUR MISSION :: Chosen.net</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.mission-card{border:2px solid #0044ff;background:#000011;padding:10px;margin-bottom:8px;position:relative}
+.mission-card .num{font-family:'Press Start 2P',monospace;font-size:20px;color:#0055ff;position:absolute;top:8px;right:10px;opacity:0.3}
+.mission-card h3{font-family:'VT323',monospace;font-size:22px;color:var(--yellow);letter-spacing:2px;margin-bottom:4px}
+.mission-card p{font-family:'VT323',monospace;font-size:16px;color:#88aaff;line-height:1.5}
+.mission-card .reward{font-family:'VT323',monospace;font-size:14px;color:#00aa00;margin-top:6px}
+.mission-card .status{font-family:'VT323',monospace;font-size:13px;padding:2px 8px;display:inline-block;margin-top:4px}
+.status-pending{background:#331100;color:#ff6600;border:1px solid #ff6600}
+.status-active{background:#001133;color:#4488ff;border:1px solid #4488ff}
+.status-done{background:#001100;color:#00aa00;border:1px solid #00aa00}
+.checklist-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px dotted #222;cursor:pointer}
+.checklist-item:hover{background:#001100}
+.checkbox{width:18px;height:18px;border:2px solid var(--green);background:#000;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-family:'VT323',monospace;color:var(--green)}
+.checklist-item.checked .checkbox{background:var(--green);color:#000}
+.checklist-item .cl-text{font-family:'VT323',monospace;font-size:17px;color:#00cc00}
+.checklist-item.checked .cl-text{color:#446644;text-decoration:line-through}
+.xp-gained{font-family:'VT323',monospace;font-size:13px;color:var(--yellow);margin-left:auto;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** MISSION BRIEFING — EYES ONLY *** CLEARANCE LEVEL: HERO *** MALKOR.EXE THREAT LEVEL: MAXIMUM *** COMPLETE ALL OBJECTIVES BEFORE Y3K ***</div>
+</div>
+
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="index.html">[HOME]</a>
+  <a href="mission.html" class="active">[MISSION]</a>
+  <a href="prophecy.html">[PROPHECY]</a>
+  <a href="enemies.html">[ENEMY FILES]</a>
+  <a href="weapons.html">[WEAPONS]</a>
+  <a href="alliances.html">[ALLIANCES]</a>
+  <a href="world.html">[WORLD MAP]</a>
+  <a href="guestbook.html">[GUESTBOOK]</a>
+  <a href="contact.html">[CONTACT]</a>
+</nav>
+
+<div class="page-header">
+  <h1>::: YOUR MISSION BRIEFING :::</h1>
+  <div class="sub">TOP SECRET // COUNCIL OF ELDERS // CLEARANCE: CHOSEN ONE</div>
+</div>
+
+<div class="sidebar-layout">
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel panel-orange" style="text-align:center">
+      <div style="font-family:'VT323',monospace;font-size:13px;color:#884400">MISSION TIMER</div>
+      <div style="font-family:'VT323',monospace;font-size:36px;color:var(--orange)" id="mtimer" class="blink">09:47</div>
+      <div style="font-family:'VT323',monospace;font-size:11px;color:#664400">UNTIL BRIEFING<br>SELF-DESTRUCTS</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: MISSION STATS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#aaffaa;line-height:2">
+        TOTAL MISSIONS: <span style="color:var(--yellow)">7</span><br>
+        COMPLETED: <span style="color:var(--green)" id="done-count">0</span><br>
+        REMAINING: <span style="color:var(--red)" id="rem-count">7</span><br>
+        SUCCESS RATE: <span style="color:var(--yellow)" id="rate">0%</span><br>
+        RANK: <span style="color:#ff88ff">NOVICE HERO</span>
+      </div>
+    </div>
+
+    <div class="panel panel-red">
+      <div class="panel-title">::: CONSEQUENCES :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#ff6666;line-height:1.7">
+        FAIL MISSION 1:<br>
+        <span style="color:#884444">Europe goes OFFLINE</span><br><br>
+        FAIL MISSION 2:<br>
+        <span style="color:#884444">Internet corrupts by 40%</span><br><br>
+        FAIL ALL:<br>
+        <span style="color:var(--red)" class="blink">WORLD ENDS. GG.</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: QUICK LINKS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;line-height:2">
+        <a href="enemies.html" style="color:#4488ff">[KNOW YOUR ENEMY]</a><br>
+        <a href="weapons.html" style="color:#4488ff">[ARM YOURSELF]</a><br>
+        <a href="alliances.html" style="color:#4488ff">[GET BACKUP]</a><br>
+        <a href="world.html" style="color:#4488ff">[SEE THE MAP]</a>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+
+    <div class="panel" style="background:#000800;border-color:var(--green)">
+      <div class="panel-title" style="font-size:20px">::: PRIMARY OBJECTIVES :::</div>
+      <div style="font-family:'VT323',monospace;font-size:16px;color:#aaaaaa;margin-bottom:10px">Click each objective to mark as complete. XP awarded upon completion.</div>
+
+      <div id="checklist">
+        <div class="checklist-item" onclick="toggle(this,'+150 XP')">
+          <div class="checkbox"></div>
+          <div class="cl-text">MISSION 1: DEFEAT MALKOR.EXE AND HIS ARMY OF POPUP ADS</div>
+          <div class="xp-gained">+150 XP</div>
+        </div>
+        <div class="checklist-item" onclick="toggle(this,'+200 XP')">
+          <div class="checkbox"></div>
+          <div class="cl-text">MISSION 2: RETRIEVE THE SACRED .ZIP FILE OF DESTINY</div>
+          <div class="xp-gained">+200 XP</div>
+        </div>
+        <div class="checklist-item" onclick="toggle(this,'+175 XP')">
+          <div class="checkbox"></div>
+          <div class="cl-text">MISSION 3: DEFRAG THE CORRUPTED CRYSTALS OF KNOWLEDGE</div>
+          <div class="xp-gained">+175 XP</div>
+        </div>
+        <div class="checklist-item" onclick="toggle(this,'+300 XP')">
+          <div class="checkbox"></div>
+          <div class="cl-text">MISSION 4: UNITE THE 7 INTERNET KINGDOMS UNDER ONE DIAL-UP</div>
+          <div class="xp-gained">+300 XP</div>
+        </div>
+        <div class="checklist-item" onclick="toggle(this,'+250 XP')">
+          <div class="checkbox"></div>
+          <div class="cl-text">MISSION 5: RESTORE THE ANCIENT HOMEPAGE OF LIGHT</div>
+          <div class="xp-gained">+250 XP</div>
+        </div>
+        <div class="checklist-item" onclick="toggle(this,'+100 XP')">
+          <div class="checkbox"></div>
+          <div class="cl-text">MISSION 6: DEFEAT THE COUNCIL OF SHADOW WEBMASTERS</div>
+          <div class="xp-gained">+100 XP</div>
+        </div>
+        <div class="checklist-item" onclick="toggle(this,'+50 XP')">
+          <div class="checkbox"></div>
+          <div class="cl-text">MISSION 7: SIGN THE GUESTBOOK (VERY IMPORTANT)</div>
+          <div class="xp-gained">+50 XP</div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <div class="prog-label">OVERALL MISSION PROGRESS</div>
+        <div class="prog-bar"><div class="prog-fill" id="mission-prog" style="width:0%;transition:width 0.5s"></div></div>
+      </div>
+      <div style="font-family:'VT323',monospace;font-size:17px;color:var(--yellow);margin-top:6px">TOTAL XP EARNED: <span id="total-xp">0</span></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="mission-card">
+        <div class="num">M1</div>
+        <h3>OPERATION: POPUP PURGE</h3>
+        <p>Infiltrate MALKOR's popup ad factory hidden beneath the GeoCities servers. Destroy 1000 popup ads using the Ad-Block Cannon. His minions protect each popup with CAPTCHA shields.</p>
+        <div class="reward">REWARD: 150 XP | Popup Immunity Badge | IE6 Exploit Knowledge</div>
+        <div><span class="status status-active">[ IN PROGRESS ]</span></div>
+      </div>
+      <div class="mission-card">
+        <div class="num">M2</div>
+        <h3>THE SACRED .ZIP FILE</h3>
+        <p>The .ZIP File of Destiny is encrypted with a 56-bit password. Legend says it contains the source code of reality itself. Last seen in a Hotmail attachment from 1998.</p>
+        <div class="reward">REWARD: 200 XP | The Password of Ages | 56k Speed Boost</div>
+        <div><span class="status status-pending">[ PENDING ]</span></div>
+      </div>
+      <div class="mission-card">
+        <div class="num">M3</div>
+        <h3>CRYSTAL DEFRAG</h3>
+        <p>Seven Crystals of Knowledge have been fragmented across 7 hard drives across the globe. Use the Defrag Hammer of Thor to reassemble them. Warning: takes 4-6 hours per drive.</p>
+        <div class="reward">REWARD: 175 XP | 100GB Storage Upgrade | Crystal Amulet</div>
+        <div><span class="status status-pending">[ PENDING ]</span></div>
+      </div>
+      <div class="mission-card">
+        <div class="num">M4</div>
+        <h3>UNITE THE KINGDOMS</h3>
+        <p>Seven Internet Kingdoms are at war over bandwidth allocation. Negotiate a peace treaty between AOL, Yahoo!, AltaVista, Napster, ICQ, Kazaa, and Ask Jeeves.</p>
+        <div class="reward">REWARD: 300 XP | Diplomat Badge | Unlimited Bandwidth Relic</div>
+        <div><span class="status status-pending">[ PENDING ]</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED | DO NOT STEAL MY HTML</div>
+  <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
+</div>
+
+<script>
+var xpValues = {150:false, 200:false, 175:false, 300:false, 250:false, 100:false, 50:false};
+var totalXP = 0;
+
+function toggle(el, xpStr){
+  el.classList.toggle('checked');
+  var xp = parseInt(xpStr);
+  if(el.classList.contains('checked')) totalXP += xp;
+  else totalXP -= xp;
+  document.getElementById('total-xp').textContent = totalXP;
+  var items = document.querySelectorAll('.checklist-item');
+  var done = document.querySelectorAll('.checklist-item.checked').length;
+  document.getElementById('done-count').textContent = done;
+  document.getElementById('rem-count').textContent = items.length - done;
+  document.getElementById('rate').textContent = Math.round(done/items.length*100) + '%';
+  document.getElementById('mission-prog').style.width = (done/items.length*100)+'%';
+}
+
+var m=9,s=47;
+setInterval(function(){
+  s--; if(s<0){s=59;m--;}
+  if(m<0){m=9;s=59;}
+  document.getElementById('mtimer').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+},1000);
+</script>
+</body>
+</html>
