@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ENEMY FILES :: Chosen.net</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.enemy-card{border:2px solid var(--red);background:#0d0000;padding:12px;margin-bottom:10px;position:relative;animation:fadein 0.5s ease both}
+.enemy-name{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--red);letter-spacing:1px;margin-bottom:6px}
+.enemy-ascii{white-space:pre;font-size:11px;line-height:1.1;color:#880000;font-family:'Courier Prime',monospace;float:right;margin-left:10px;margin-bottom:4px;border:1px solid #330000;padding:4px}
+.enemy-stat{font-family:'VT323',monospace;font-size:15px;color:#aa4444;margin:2px 0}
+.enemy-stat span{color:var(--yellow)}
+.weakness{background:#001100;border:1px solid #004400;padding:4px 8px;font-family:'VT323',monospace;font-size:15px;color:var(--green);margin-top:6px;display:inline-block}
+.threat-badge{position:absolute;top:8px;right:8px;font-family:'VT323',monospace;font-size:13px;padding:2px 8px;border:1px solid}
+.threat-low{color:#00aa00;border-color:#004400;background:#001100}
+.threat-med{color:var(--yellow);border-color:#884400;background:#110a00}
+.threat-high{color:var(--orange);border-color:#883300;background:#110500}
+.threat-critical{color:var(--red);border-color:#880000;background:#110000;animation:blink 1s step-end infinite}
+.search-bar{background:#000;color:var(--green);border:1px solid var(--dark-green);font-family:'Courier Prime',monospace;font-size:15px;padding:6px 10px;width:100%;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** CLASSIFIED ENEMY DATABASE *** CLEARANCE: HERO LEVEL *** 14 ACTIVE THREATS DETECTED *** MALKOR.EXE SIGHTED IN SECTOR 7 *** DO NOT APPROACH ALONE ***</div>
+</div>
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="index.html">[HOME]</a>
+  <a href="mission.html">[MISSION]</a>
+  <a href="prophecy.html">[PROPHECY]</a>
+  <a href="enemies.html" class="active">[ENEMY FILES]</a>
+  <a href="weapons.html">[WEAPONS]</a>
+  <a href="alliances.html">[ALLIANCES]</a>
+  <a href="world.html">[WORLD MAP]</a>
+  <a href="guestbook.html">[GUESTBOOK]</a>
+  <a href="contact.html">[CONTACT]</a>
+</nav>
+
+<div class="page-header">
+  <h1 style="color:var(--red)">::: ENEMY FILES — CLASSIFIED :::</h1>
+  <div class="sub">DATABASE OF KNOWN THREATS // COUNCIL INTELLIGENCE DIVISION</div>
+</div>
+
+<div class="three-col">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: THREAT LEVELS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;line-height:2">
+        <span class="threat-low" style="position:static;display:inline;padding:1px 6px">LOW</span> = Annoying<br>
+        <span class="threat-med" style="position:static;display:inline;padding:1px 6px">MEDIUM</span> = Dangerous<br>
+        <span class="threat-high" style="position:static;display:inline;padding:1px 6px">HIGH</span> = Very Bad<br>
+        <span class="threat-critical" style="position:static;display:inline;padding:1px 6px;animation:none;color:var(--red)">CRITICAL</span> = RUN
+      </div>
+    </div>
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: ENEMY COUNT :::</div>
+      <div style="font-family:'VT323',monospace;font-size:34px;color:var(--red);text-align:center" class="blink">14</div>
+      <div style="font-family:'VT323',monospace;font-size:13px;color:#884444;text-align:center">ACTIVE THREATS</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#664444;margin-top:6px;line-height:1.7">
+        CRITICAL: 1<br>
+        HIGH: 3<br>
+        MEDIUM: 5<br>
+        LOW: 5
+      </div>
+    </div>
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: FILTER :::</div>
+      <input type="text" class="search-bar" id="search" placeholder="Search enemies..." oninput="filterEnemies()">
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#884444">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#884444;font-family:'VT323',monospace;font-size:14px"><input type="checkbox" id="f-critical" onchange="filterEnemies()"> CRITICAL ONLY</label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#884444;font-family:'VT323',monospace;font-size:14px"><input type="checkbox" id="f-defeated" onchange="filterEnemies()"> HIDE DEFEATED</label>
+      </div>
+    </div>
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: YOUR KILLS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:30px;color:var(--green);text-align:center" id="killcount">0</div>
+      <div style="font-family:'VT323',monospace;font-size:13px;color:#446644;text-align:center">ENEMIES DEFEATED</div>
+    </div>
+  </div>
+
+  <div id="enemy-list">
+    <!-- BOSS -->
+    <div class="enemy-card" data-name="MALKOR" data-level="critical" data-defeated="false">
+      <div class="threat-badge threat-critical">CRITICAL</div>
+      <div class="enemy-ascii">  /\__/\
+ (>◕ ◕<)
+  (evil)
+  |    |
+  (____)</div>
+      <div class="enemy-name">MALKOR.EXE — THE VIRUS LORD</div>
+      <div class="enemy-stat">HP: <span>99,999 / 99,999</span></div>
+      <div class="enemy-stat">ATTACK: <span>POPUP STORM, DATA CORRUPTION, BLUE SCREEN OF DEATH</span></div>
+      <div class="enemy-stat">DEFENSE: <span>FIREWALL CLOAK, ANTIVIRUS SHIELD</span></div>
+      <div class="enemy-stat">LOCATION: <span>UNKNOWN — MOVING BETWEEN SERVERS</span></div>
+      <div class="enemy-stat">ORIGIN: <span>SECRET FLOPPY DISK, NEW MEXICO, 1998</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">The supreme evil. Escaped government containment. His goal: corrupt every byte on earth by Y3K. Approaches: Do NOT confront alone. Bring the Sacred .ZIP File.</div>
+      <div class="weakness">WEAKNESS: THE SACRED .ZIP FILE OF DESTINY (password required)</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'MALKOR')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+    </div>
+
+    <!-- MINI BOSS 1 -->
+    <div class="enemy-card" data-name="POPUP" data-level="high" data-defeated="false">
+      <div class="threat-badge threat-high">HIGH</div>
+      <div class="enemy-ascii"> ___________
+|CLICK HERE!|
+|  YOU WON! |
+|___________|
+      [X]</div>
+      <div class="enemy-name">POPUP_GENERAL.EXE</div>
+      <div class="enemy-stat">HP: <span>5,000 / 5,000</span></div>
+      <div class="enemy-stat">ATTACK: <span>INFINITE POPUP SPAWN, FAKE VIRUS ALERT</span></div>
+      <div class="enemy-stat">LOCATION: <span>GEOCITIES SERVERS, USA</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Commands Malkor's popup army. Spawns 10 new popups for every one closed. Immune to right-click.</div>
+      <div class="weakness">WEAKNESS: AD-BLOCK CANNON (see Weapons page)</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'POPUP_GENERAL')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+    </div>
+
+    <!-- MINI BOSS 2 -->
+    <div class="enemy-card" data-name="COOKIE" data-level="high" data-defeated="false">
+      <div class="threat-badge threat-high">HIGH</div>
+      <div class="enemy-ascii">  .------.
+ ( COOKIE )
+  '------'
+  |steals|
+  '------'</div>
+      <div class="enemy-name">COOKIE_THIEF.BAT</div>
+      <div class="enemy-stat">HP: <span>3,200 / 3,200</span></div>
+      <div class="enemy-stat">ATTACK: <span>IDENTITY THEFT, SESSION HIJACK, TRACKING</span></div>
+      <div class="enemy-stat">LOCATION: <span>DARK WEB, TOR NETWORK</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Steals browser cookies to harvest login credentials. Has stolen info from 400,000 Hotmail accounts.</div>
+      <div class="weakness">WEAKNESS: INCOGNITO SHIELD + COOKIE CRUMBLER</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'COOKIE_THIEF')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="enemy-card" data-name="DIALUP" data-level="medium" data-defeated="false">
+      <div class="threat-badge threat-med">MEDIUM</div>
+      <div class="enemy-ascii">~*~kshhhhh~*~
+ (dial up noise)
+  56k VAMPIRE</div>
+      <div class="enemy-name">DIALUP_DRAIN.VBS</div>
+      <div class="enemy-stat">HP: <span>1,800 / 1,800</span></div>
+      <div class="enemy-stat">ATTACK: <span>BANDWIDTH SUCK, LINE DISCONNECT, BUSY SIGNAL</span></div>
+      <div class="enemy-stat">LOCATION: <span>PHONE LINE INFRASTRUCTURE</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Throttles internet connections to 2400 baud. Has caused catastrophic slowdowns across 14 countries.</div>
+      <div class="weakness">WEAKNESS: BROADBAND BLADE (T1 LINE ATTACK)</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'DIALUP_DRAIN')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+    </div>
+
+    <!-- LOW -->
+    <div class="enemy-card" data-name="WORM" data-level="low" data-defeated="false">
+      <div class="threat-badge threat-low">LOW</div>
+      <div class="enemy-ascii"> o~o~o~o~o
+ CHAIN MAIL
+ WORM.EXE
+ ~o~o~o~o~</div>
+      <div class="enemy-name">CHAINMAIL_WORM.EXE</div>
+      <div class="enemy-stat">HP: <span>200 / 200</span></div>
+      <div class="enemy-stat">ATTACK: <span>FORWARD THIS TO 10 FRIENDS OR ELSE</span></div>
+      <div class="enemy-stat">LOCATION: <span>AOL MAIL SERVERS</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Annoying but mostly harmless. Clogs inboxes with chain letters threatening bad luck if not forwarded.</div>
+      <div class="weakness">WEAKNESS: DELETE KEY</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'CHAINMAIL_WORM')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: BATTLE LOG :::</div>
+      <div id="battle-log" style="font-family:'VT323',monospace;font-size:13px;color:#aa4444;line-height:1.7;min-height:80px">No battles yet...<br>Engage an enemy to begin.</div>
+    </div>
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: MALKOR STATUS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#884444;line-height:1.7">
+        LAST SEEN:<br><span style="color:var(--yellow)">SERVER 7-B, SECTOR 9</span><br><br>
+        CURRENT FORM:<br><span style="color:var(--red)" class="blink">VIRUS LORD (FINAL)</span><br><br>
+        WANTED BY:<br><span style="color:#aaaaaa">NSA, FBI, AOL, NORTON, MCAFEE</span><br><br>
+        BOUNTY:<br><span style="color:var(--yellow)">1,000,000 INTERNET POINTS</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">::: TIPS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#888;line-height:1.7">
+        - Always save before<br>battling MALKOR<br><br>
+        - Popups are weak to<br>the Ad-Block Cannon<br><br>
+        - Never open chain<br>mail attachments<br><br>
+        - Broadband = instant<br>win vs DIALUP types<br><br>
+        - Sign guestbook for<br>+50 luck bonus
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED | DO NOT STEAL MY HTML</div>
+  <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
+</div>
+<script>
+var kills = 0;
+var battleLog = [];
+
+function defeat(btn, name){
+  var card = btn.closest('.enemy-card');
+  if(card.dataset.defeated === 'true') return;
+  card.dataset.defeated = 'true';
+  btn.textContent = '[ DEFEATED ]';
+  btn.disabled = true;
+  btn.style.background = '#003300';
+  btn.style.color = '#00aa00';
+  card.style.opacity = '0.5';
+  kills++;
+  document.getElementById('killcount').textContent = kills;
+  var msg = '[' + new Date().toLocaleTimeString() + '] ' + name + ' defeated! +XP';
+  battleLog.unshift(msg);
+  if(battleLog.length > 6) battleLog.pop();
+  document.getElementById('battle-log').innerHTML = battleLog.join('<br>');
+}
+
+function filterEnemies(){
+  var q = document.getElementById('search').value.toLowerCase();
+  var critOnly = document.getElementById('f-critical').checked;
+  var hideDefeated = document.getElementById('f-defeated').checked;
+  document.querySelectorAll('.enemy-card').forEach(function(card){
+    var name = card.dataset.name.toLowerCase();
+    var level = card.dataset.level;
+    var defeated = card.dataset.defeated === 'true';
+    var show = name.includes(q);
+    if(critOnly && level !== 'critical') show = false;
+    if(hideDefeated && defeated) show = false;
+    card.style.display = show ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
