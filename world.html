@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WORLD MAP :: Chosen.net</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.map-container{background:#000810;border:2px solid var(--cyan);padding:10px;position:relative}
+.map-ascii{white-space:pre;font-family:'Courier Prime',monospace;font-size:11.5px;line-height:1.3;color:#003344;user-select:none}
+.region-btn{position:absolute;background:transparent;border:1px solid rgba(0,255,255,0.4);cursor:pointer;font-family:'VT323',monospace;font-size:13px;color:#00aaaa;padding:2px 6px}
+.region-btn:hover{background:rgba(0,255,255,0.1);color:var(--cyan)}
+.region-btn.danger{border-color:rgba(255,255,0,0.6);color:var(--yellow)}
+.region-btn.offline{border-color:rgba(255,0,0,0.6);color:var(--red);animation:blink 1s step-end infinite}
+.region-btn.online{border-color:rgba(0,255,0,0.6);color:var(--green)}
+.region-info{border:2px solid var(--cyan);background:#000a10;padding:12px}
+.region-name{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--cyan);letter-spacing:1px;margin-bottom:8px}
+.region-stat{font-family:'VT323',monospace;font-size:16px;color:#336699;margin:3px 0}
+.region-stat span{color:var(--yellow)}
+.event-item{font-family:'VT323',monospace;font-size:15px;color:#225544;padding:3px 0;border-bottom:1px dotted #111}
+.event-time{color:#333;font-size:13px}
+</style>
+</head>
+<body>
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** LIVE WORLD THREAT MAP *** ASIA SECTOR IN DANGER *** ANTARCTICA OFFLINE *** MOON BASE HOLDING *** MALKOR FORCES MOVING EAST *** UPDATE EVERY 60 SECONDS ***</div>
+</div>
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="index.html">[HOME]</a>
+  <a href="mission.html">[MISSION]</a>
+  <a href="prophecy.html">[PROPHECY]</a>
+  <a href="enemies.html">[ENEMY FILES]</a>
+  <a href="weapons.html">[WEAPONS]</a>
+  <a href="alliances.html">[ALLIANCES]</a>
+  <a href="world.html" class="active">[WORLD MAP]</a>
+  <a href="guestbook.html">[GUESTBOOK]</a>
+  <a href="contact.html">[CONTACT]</a>
+</nav>
+
+<div class="page-header">
+  <h1 style="color:var(--cyan)">::: LIVE WORLD THREAT MAP :::</h1>
+  <div class="sub" style="color:#336699">REAL-TIME MALKOR.EXE INFECTION STATUS // CLICK REGIONS FOR DETAILS</div>
+</div>
+
+<div class="sidebar-layout-right">
+  <div style="display:flex;flex-direction:column;gap:8px">
+
+    <div class="map-container" id="map-wrap" style="min-height:340px">
+      <div class="map-ascii" id="ascii-map">
+    .~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.
+   /  NORTH AMERICA          EUROPE         RUSSIA                        \
+  |   ___________         __________     ___________                       |
+  |  /  ONLINE   \       / ONLINE   \   /  ONLINE   \      ASIA           |
+  | | [SAFE ZONE] |     | [COUNCIL  |  | [FROST NET] |  ___________       |
+  | |  NO POPUPS  |     |  HQ HERE] |  |             | /  DANGER!! \      |
+  |  \___________/       \__________/   \___________/  | [MALKOR IN] |    |
+  |                                                     | [ASIA SERV] |    |
+  |                                                      \___________/     |
+  |   SOUTH         AFRICA          MIDDLE EAST          SOUTH ASIA        |
+  |   AMERICA      ________        ____________          __________        |
+  |  __________   /        \      /   ONLINE   \        /  ONLINE   \     |
+  | /  ONLINE   \ | ONLINE  |    | [ANCIENT ZIP|       | [CRYSTAL 3] |    |
+  | |  [JUNGLE  | | [SAFARI |    | FILE STORED]|        \__________/      |
+  | |  SERVERS] |  \________/     \____________/                          |
+  |  \__________/                                                          |
+  |                                                                         |
+  |           ANTARCTICA              MOON BASE    SECRET BUNKER            |
+  |           ___________            __________    ___________             |
+  |          / X OFFLINE X\         / ONLINE   \  /  ONLINE   \           |
+  |         | [MALKOR HQ?] |       | [LASER DEF]| | [COUNCIL  ] |         |
+  |         |  CORRUPTED!  |        \__________/   \___________/          |
+  |          \___________/                                                  |
+   \                                                                       /
+    '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+      </div>
+
+      <!-- Clickable region overlays -->
+      <button class="region-btn online" style="top:15%;left:8%" onclick="showRegion('north-america')">N. AMERICA ●</button>
+      <button class="region-btn online" style="top:15%;left:38%" onclick="showRegion('europe')">EUROPE ●</button>
+      <button class="region-btn online" style="top:15%;left:60%" onclick="showRegion('russia')">RUSSIA ●</button>
+      <button class="region-btn danger" style="top:20%;left:76%" onclick="showRegion('asia')">ASIA ⚠</button>
+      <button class="region-btn online" style="top:50%;left:10%" onclick="showRegion('south-america')">S. AMERICA ●</button>
+      <button class="region-btn online" style="top:50%;left:38%" onclick="showRegion('africa')">AFRICA ●</button>
+      <button class="region-btn online" style="top:50%;left:58%" onclick="showRegion('middle-east')">M. EAST ●</button>
+      <button class="region-btn offline" style="top:75%;left:25%" onclick="showRegion('antarctica')">ANTARCTICA ☠</button>
+      <button class="region-btn online" style="top:75%;left:60%" onclick="showRegion('moon')">MOON BASE ●</button>
+      <button class="region-btn online" style="top:75%;left:80%" onclick="showRegion('bunker')">SECRET BUNKER ●</button>
+    </div>
+
+    <div class="panel panel-cyan">
+      <div class="panel-title" style="color:var(--cyan)">::: MAP LEGEND :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;line-height:2">
+        <span style="color:var(--green)">● ONLINE</span> — Region safe, internet running<br>
+        <span style="color:var(--yellow)">⚠ DANGER</span> — MALKOR forces present<br>
+        <span style="color:var(--red)">☠ OFFLINE</span> — Region corrupted, no connection
+      </div>
+    </div>
+
+    <div class="panel panel-cyan">
+      <div class="panel-title" style="color:var(--cyan)">::: GLOBAL STATS :::</div>
+      <div class="prog-wrap">
+        <div class="prog-label">WORLD CORRUPTION %</div>
+        <div class="prog-bar"><div class="prog-fill red" id="world-prog" style="width:23%"></div></div>
+      </div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#336699;margin-top:4px">
+        REGIONS ONLINE: <span style="color:var(--green)">8 / 10</span><br>
+        IN DANGER: <span style="color:var(--yellow)">1 / 10</span><br>
+        OFFLINE: <span style="color:var(--red)">1 / 10</span>
+      </div>
+    </div>
+
+    <div class="panel panel-cyan">
+      <div class="panel-title" style="color:var(--cyan)">::: LIVE EVENTS :::</div>
+      <div id="event-log">
+        <div class="event-item">POPUP attack on ASIA-7 <span class="event-time">[1m]</span></div>
+        <div class="event-item">EUROPE firewall holding <span class="event-time">[3m]</span></div>
+        <div class="event-item">ANTARCTICA OFFLINE confirmed <span class="event-time">[8m]</span></div>
+        <div class="event-item">MOON BASE laser fired <span class="event-time">[12m]</span></div>
+        <div class="event-item">N. AMERICA patrol normal <span class="event-time">[15m]</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div>
+    <div class="region-info" id="region-info">
+      <div class="region-name">SELECT A REGION</div>
+      <div style="font-family:'VT323',monospace;font-size:16px;color:#225544;line-height:1.7">
+        Click any region on the map to see<br>detailed threat information,<br>ally positions, and mission status<br>for that area.
+      </div>
+    </div>
+
+    <div style="height:8px"></div>
+
+    <div class="panel panel-cyan">
+      <div class="panel-title" style="color:var(--cyan)">::: DEPLOY HERO :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#336699;margin-bottom:8px">Deploy yourself to a region:</div>
+      <select id="deploy-region" style="background:#000;color:var(--cyan);border:1px solid var(--cyan);font-family:'VT323',monospace;font-size:15px;padding:4px;width:100%;margin-bottom:6px">
+        <option value="">-- SELECT REGION --</option>
+        <option>North America</option>
+        <option>Europe</option>
+        <option>Asia (DANGER)</option>
+        <option>Russia</option>
+        <option>Africa</option>
+        <option>South America</option>
+        <option>Middle East</option>
+        <option>Moon Base</option>
+        <option>Secret Bunker</option>
+        <option value="ant">Antarctica (OFFLINE — NOT RECOMMENDED)</option>
+      </select>
+      <button class="btn btn-blue" onclick="deploy()" style="width:100%;font-size:12px">[ DEPLOY TO REGION ]</button>
+      <div id="deploy-msg" style="font-family:'VT323',monospace;font-size:15px;color:var(--yellow);margin-top:6px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED | DO NOT STEAL MY HTML</div>
+  <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
+</div>
+
+<script>
+var regions = {
+  'north-america': {name:'NORTH AMERICA',status:'ONLINE',color:'#00ff00',threat:'LOW',internet:'98.7%',servers:'4,200',allies:'Wizard_42 (nearby)',mission:'Patrol only. No active threats.',population:'300M online users',notes:'Council HQ located in Sector NA-7. Safest region.'},
+  'europe': {name:'EUROPE',status:'ONLINE',color:'#00ff00',threat:'LOW',internet:'97.2%',servers:'3,800',allies:'None currently',mission:'Maintain firewall. Watch for popup incursions.',population:'250M online users',notes:'Alliance treaty with Order of Netscape here.'},
+  'russia': {name:'RUSSIA',status:'ONLINE',color:'#00ff00',threat:'MEDIUM',internet:'89.1%',servers:'2,100',allies:'Unknown agents',mission:'Monitor MALKOR movement eastward.',population:'88M online users',notes:'Some rogue servers detected. Investigate.'},
+  'asia': {name:'ASIA — ⚠ DANGER ⚠',status:'DANGER',color:'#ffff00',threat:'HIGH',internet:'61.3%',servers:'5,600',allies:'DragonKid (defending)',mission:'URGENT: Repel MALKOR invasion. Backup DragonKid.',population:'400M online users',notes:'MALKOR forces have breached perimeter. Escalating.'},
+  'south-america': {name:'SOUTH AMERICA',status:'ONLINE',color:'#00ff00',threat:'LOW',internet:'82.4%',servers:'1,400',allies:'None',mission:'Standard patrol.',population:'95M online users',notes:'The Crystal #4 is stored here in a hidden server.'},
+  'africa': {name:'AFRICA',status:'ONLINE',color:'#00ff00',threat:'LOW',internet:'54.2%',servers:'800',allies:'None',mission:'Expand internet access, guard servers.',population:'40M online users',notes:'Limited infrastructure. MALKOR unlikely to target.'},
+  'middle-east': {name:'MIDDLE EAST',status:'ONLINE',color:'#00ff00',threat:'LOW',internet:'77.8%',servers:'1,200',allies:'None',mission:'Guard the Sacred .ZIP storage location.',population:'65M online users',notes:'The Sacred .ZIP File of Destiny is hidden here.'},
+  'antarctica': {name:'ANTARCTICA — ☠ OFFLINE',status:'OFFLINE',color:'#ff0000',threat:'CRITICAL',internet:'0%',servers:'CORRUPTED',allies:'None — evacuated',mission:'DO NOT ENTER. Region fully corrupted by MALKOR.',population:'0 (all evacuated)',notes:'POSSIBLE MALKOR SECONDARY BASE. AVOID.'},
+  'moon': {name:'MOON BASE ALPHA',status:'ONLINE',color:'#00ff00',threat:'NONE',internet:'100%',servers:'999 (classified)',allies:'Council Elite Guard',mission:'Maintain laser defense grid. Observe from orbit.',population:'47 elite soldiers',notes:'Immune to ground-based MALKOR attacks. Safest point.'},
+  'bunker': {name:'SECRET BUNKER',status:'ONLINE',color:'#00ff00',threat:'NONE',internet:'100%',servers:'CLASSIFIED',allies:'Council Elders',mission:'Protect Council leadership. Last resort fallback.',population:'CLASSIFIED',notes:'If all else fails, Hero retreats here. Location SECRET.'}
+};
+
+function showRegion(id){
+  var r = regions[id];
+  if(!r) return;
+  var el = document.getElementById('region-info');
+  el.innerHTML = '<div class="region-name" style="color:'+r.color+'">'+r.name+'</div>'+
+    '<div class="region-stat">STATUS: <span style="color:'+r.color+'">'+r.status+'</span></div>'+
+    '<div class="region-stat">THREAT LEVEL: <span>'+r.threat+'</span></div>'+
+    '<div class="region-stat">INTERNET UPTIME: <span>'+r.internet+'</span></div>'+
+    '<div class="region-stat">ACTIVE SERVERS: <span>'+r.servers+'</span></div>'+
+    '<div class="region-stat">ALLIES PRESENT: <span>'+r.allies+'</span></div>'+
+    '<div class="region-stat">POPULATION: <span>'+r.population+'</span></div>'+
+    '<div style="margin-top:8px;font-family:\'VT323\',monospace;font-size:15px;color:#336699;line-height:1.5">'+
+    '<span style="color:var(--yellow)">MISSION:</span> '+r.mission+'</div>'+
+    '<div style="margin-top:6px;font-family:\'VT323\',monospace;font-size:14px;color:#225544">'+r.notes+'</div>';
+}
+
+function deploy(){
+  var sel = document.getElementById('deploy-region');
+  var region = sel.value;
+  if(!region){ document.getElementById('deploy-msg').textContent='SELECT A REGION FIRST.'; return; }
+  var msg = region === 'ant'
+    ? '>>> WARNING: DEPLOYING TO ANTARCTICA. CORRUPTION IMMINENT. ARE YOU SURE?? (not actually possible)'
+    : '>>> HERO DEPLOYED TO ' + region.toUpperCase() + '! TRAVEL TIME: 2 HOURS BY DIAL-UP CARRIER.';
+  document.getElementById('deploy-msg').textContent = msg;
+}
+
+// Live event ticker
+var events = [
+  'N.AMERICA popup repelled', 'EUROPE firewall updated', 'ASIA servers falling fast',
+  'MOON laser charged', 'BUNKER Council meeting', 'RUSSIA anomaly detected',
+  'AFRICA crystal guarded', 'M.EAST ZIP secured', 'S.AMERICA patrol normal'
+];
+var ei = 0;
+setInterval(function(){
+  var log = document.getElementById('event-log');
+  var d = document.createElement('div');
+  d.className = 'event-item';
+  d.innerHTML = events[ei%events.length] + ' <span class="event-time">[just now]</span>';
+  log.insertBefore(d, log.firstChild);
+  if(log.children.length > 6) log.removeChild(log.lastChild);
+  ei++;
+}, 5000);
+
+// Slowly animate corruption bar
+var corr = 23;
+setInterval(function(){
+  corr = Math.min(100, corr + (Math.random() > 0.7 ? 1 : 0));
+  document.getElementById('world-prog').style.width = corr + '%';
+}, 3000);
+</script>
+</body>
+</html>
