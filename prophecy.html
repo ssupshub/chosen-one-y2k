@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>THE PROPHECY :: Chosen.net</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.scroll-container{border:2px solid var(--purple);background:#0a0010;padding:20px;position:relative}
+.scroll-border{border:1px solid #440044;position:absolute;top:6px;left:6px;right:6px;bottom:6px;pointer-events:none}
+.prophecy-line{font-family:'VT323',monospace;font-size:22px;color:#cc66ff;line-height:1.8;text-align:center;padding:3px 0}
+.prophecy-line.highlight{color:var(--yellow);font-size:24px}
+.prophecy-line.red{color:var(--red)}
+.rune{font-size:28px;text-align:center;color:#660066;margin:6px 0;letter-spacing:8px}
+.oracle-box{border:2px solid #880088;background:#050010;padding:12px;text-align:center}
+.oracle-input{background:#000;color:#cc66ff;border:1px solid #660066;font-family:'Courier Prime',monospace;font-size:15px;padding:8px;width:100%;margin-bottom:8px}
+.oracle-response{font-family:'VT323',monospace;font-size:18px;color:#cc66ff;min-height:50px;padding:8px;border:1px dashed #440044;background:#030008;line-height:1.6}
+.tab-btn{font-family:'VT323',monospace;font-size:16px;background:#000;color:#666;border:1px solid #333;padding:4px 14px;cursor:pointer;letter-spacing:1px}
+.tab-btn.active{background:#200030;color:#cc66ff;border-color:#880088}
+.tab-content{display:none}
+.tab-content.active{display:block}
+</style>
+</head>
+<body>
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** THE ANCIENT PROPHECY SPEAKS *** WRITTEN IN THE YEAR OF NETSCAPE 1.0 *** THE CHOSEN ONE HAS ARRIVED *** MALKOR FEARS THE SCROLLS *** READ CAREFULLY ***</div>
+</div>
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="index.html">[HOME]</a>
+  <a href="mission.html">[MISSION]</a>
+  <a href="prophecy.html" class="active">[PROPHECY]</a>
+  <a href="enemies.html">[ENEMY FILES]</a>
+  <a href="weapons.html">[WEAPONS]</a>
+  <a href="alliances.html">[ALLIANCES]</a>
+  <a href="world.html">[WORLD MAP]</a>
+  <a href="guestbook.html">[GUESTBOOK]</a>
+  <a href="contact.html">[CONTACT]</a>
+</nav>
+
+<div class="page-header">
+  <h1 style="color:#cc66ff">::: THE ANCIENT PROPHECY :::</h1>
+  <div class="sub" style="color:#9955bb">TRANSCRIBED FROM THE SCROLLS OF NETSCAPE 1.0 — CIRCA 1994</div>
+</div>
+
+<div class="sidebar-layout-right">
+  <div style="display:flex;flex-direction:column;gap:8px">
+
+    <div style="margin-bottom:6px">
+      <button class="tab-btn active" onclick="switchTab('scroll1',this)">SCROLL I</button>
+      <button class="tab-btn" onclick="switchTab('scroll2',this)">SCROLL II</button>
+      <button class="tab-btn" onclick="switchTab('scroll3',this)">SCROLL III</button>
+      <button class="tab-btn" onclick="switchTab('verse',this)">ALL VERSES</button>
+    </div>
+
+    <div id="scroll1" class="tab-content active">
+      <div class="scroll-container">
+        <div class="scroll-border"></div>
+        <div class="rune">⚡ ◈ ⚡ ◈ ⚡</div>
+        <div class="prophecy-line" style="color:#9955bb;font-size:16px">— THE FIRST SCROLL: OF THE CHOSEN —</div>
+        <div style="height:10px"></div>
+        <div class="prophecy-line">One who surfs the web at dusk,</div>
+        <div class="prophecy-line">Who hears the modem sing and husk,</div>
+        <div class="prophecy-line highlight">Shall click the link and save us all,</div>
+        <div class="prophecy-line highlight">Before the great hard drive shall fall.</div>
+        <div style="height:10px"></div>
+        <div class="prophecy-line">Their IP address shall glow with light,</div>
+        <div class="prophecy-line">Their ping shall be low, their packets bright,</div>
+        <div class="prophecy-line red">And MALKOR.EXE shall fear their name,</div>
+        <div class="prophecy-line red">For the Chosen One has entered the game.</div>
+        <div style="height:10px"></div>
+        <div class="rune">◈ ⚡ ◈ ⚡ ◈</div>
+        <div style="font-family:'VT323',monospace;font-size:13px;color:#440044;text-align:right;margin-top:8px">— Verse 1-8, Scroll I, Netscape Codex</div>
+      </div>
+    </div>
+
+    <div id="scroll2" class="tab-content">
+      <div class="scroll-container">
+        <div class="scroll-border"></div>
+        <div class="rune">☠ ◈ ☠ ◈ ☠</div>
+        <div class="prophecy-line" style="color:#9955bb;font-size:16px">— THE SECOND SCROLL: OF MALKOR —</div>
+        <div style="height:10px"></div>
+        <div class="prophecy-line red">From a floppy disk in desert lands,</div>
+        <div class="prophecy-line red">He rose with corrupted, viral hands,</div>
+        <div class="prophecy-line red">MALKOR.EXE, the Virus King,</div>
+        <div class="prophecy-line red">Whose popup ads cause suffering.</div>
+        <div style="height:10px"></div>
+        <div class="prophecy-line">His weakness lies in one true thing —</div>
+        <div class="prophecy-line">The Sacred Zip, what fortune brings,</div>
+        <div class="prophecy-line highlight">When unpacked with the Password of Ages,</div>
+        <div class="prophecy-line highlight">He shall be banished from all pages.</div>
+        <div style="height:10px"></div>
+        <div class="rune">◈ ☠ ◈ ☠ ◈</div>
+        <div style="font-family:'VT323',monospace;font-size:13px;color:#440044;text-align:right;margin-top:8px">— Verse 1-8, Scroll II, Netscape Codex</div>
+      </div>
+    </div>
+
+    <div id="scroll3" class="tab-content">
+      <div class="scroll-container">
+        <div class="scroll-border"></div>
+        <div class="rune">★ ◈ ★ ◈ ★</div>
+        <div class="prophecy-line" style="color:#9955bb;font-size:16px">— THE THIRD SCROLL: OF VICTORY —</div>
+        <div style="height:10px"></div>
+        <div class="prophecy-line">When seven kingdoms stand as one,</div>
+        <div class="prophecy-line">And all the crystal defrags done,</div>
+        <div class="prophecy-line">The Ancient Homepage glows with white,</div>
+        <div class="prophecy-line">And dial-up speeds shall reach full light.</div>
+        <div style="height:10px"></div>
+        <div class="prophecy-line highlight">The Chosen signs the guestbook last,</div>
+        <div class="prophecy-line highlight">And so the age of darkness passed,</div>
+        <div class="prophecy-line" style="color:#00ff88">The internet reborn and bright,</div>
+        <div class="prophecy-line" style="color:#00ff88">56k burns through the night.</div>
+        <div style="height:10px"></div>
+        <div class="rune">◈ ★ ◈ ★ ◈</div>
+        <div style="font-family:'VT323',monospace;font-size:13px;color:#440044;text-align:right;margin-top:8px">— Verse 1-8, Scroll III, Netscape Codex</div>
+      </div>
+    </div>
+
+    <div id="verse" class="tab-content">
+      <div class="scroll-container">
+        <div class="scroll-border"></div>
+        <div class="rune">⚡ ◈ ☠ ◈ ★</div>
+        <div class="prophecy-line" style="color:#9955bb;font-size:16px">— COMPLETE NETSCAPE CODEX —</div>
+        <div style="height:8px"></div>
+        <div class="prophecy-line">One who surfs the web at dusk,</div>
+        <div class="prophecy-line">Who hears the modem sing and husk,</div>
+        <div class="prophecy-line highlight">Shall click the link and save us all,</div>
+        <div class="prophecy-line highlight">Before the great hard drive shall fall.</div>
+        <div class="prophecy-line red">From a floppy disk in desert lands,</div>
+        <div class="prophecy-line red">He rose with corrupted, viral hands,</div>
+        <div class="prophecy-line">When seven kingdoms stand as one,</div>
+        <div class="prophecy-line">And all the crystal defrags done,</div>
+        <div class="prophecy-line" style="color:#00ff88">The internet reborn and bright,</div>
+        <div class="prophecy-line" style="color:#00ff88">56k burns through the night.</div>
+        <div style="height:8px"></div>
+        <div class="rune">◈ END OF CODEX ◈</div>
+      </div>
+    </div>
+
+    <div class="oracle-box">
+      <div style="font-family:'VT323',monospace;font-size:22px;color:#aa44ff;margin-bottom:6px;letter-spacing:3px">::: CONSULT THE ORACLE :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#664466;margin-bottom:8px">Ask the Ancient Oracle a yes/no question about your destiny.</div>
+      <input type="text" class="oracle-input" id="oracle-q" placeholder="Type your question here..." onkeydown="if(event.key==='Enter')askOracle()">
+      <button class="btn" onclick="askOracle()" style="background:#660088;color:#fff;border:none;padding:6px 18px;font-family:'Courier Prime',monospace;font-weight:bold;cursor:pointer">[ CONSULT THE ORACLE ]</button>
+      <div class="oracle-response" id="oracle-response" style="margin-top:8px">The oracle awaits your question...</div>
+    </div>
+
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel panel-purple">
+      <div class="panel-title" style="color:#cc66ff">::: SCROLL INDEX :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#9966aa;line-height:2">
+        <span style="color:var(--yellow)">Scroll I:</span> The Chosen<br>
+        <span style="color:var(--yellow)">Scroll II:</span> Of Malkor<br>
+        <span style="color:var(--yellow)">Scroll III:</span> Of Victory<br>
+        <span style="color:#444">Scroll IV: [SEALED]</span><br>
+        <span style="color:#444">Scroll V: [SEALED]</span><br>
+        <span style="color:#444">Scroll VI: [SEALED]</span>
+      </div>
+    </div>
+
+    <div class="panel panel-purple">
+      <div class="panel-title" style="color:#cc66ff">::: PROPHECY SIGNS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#9966aa;line-height:1.8">
+        <span style="color:var(--green)">✓</span> Modem heard singing<br>
+        <span style="color:var(--green)">✓</span> Link was clicked<br>
+        <span style="color:var(--green)">✓</span> Chosen has arrived<br>
+        <span style="color:var(--red)" class="blink">✗</span> Zip not unpacked<br>
+        <span style="color:var(--red)" class="blink">✗</span> Kingdoms not united<br>
+        <span style="color:var(--red)" class="blink">✗</span> Guestbook unsigned
+      </div>
+    </div>
+
+    <div class="panel panel-purple">
+      <div class="panel-title" style="color:#cc66ff">::: FULFILLMENT :::</div>
+      <div class="prog-wrap">
+        <div class="prog-label" style="color:#9966aa">PROPHECY %</div>
+        <div class="prog-bar"><div class="prog-fill purple" style="width:33%"></div></div>
+      </div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#9966aa;margin-top:6px">3 of 9 signs fulfilled</div>
+    </div>
+
+    <div class="panel panel-purple">
+      <div class="panel-title" style="color:#cc66ff">::: SCHOLARS SAY :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#9966aa;line-height:1.7">
+        <span style="color:var(--yellow)">Elder Byte:</span><br>
+        "The modem is clear. It was always you."<br><br>
+        <span style="color:var(--yellow)">Wizard_42:</span><br>
+        "I've studied this since '94. No doubts."<br><br>
+        <span style="color:var(--yellow)">High Monk of HTML:</span><br>
+        "The &lt;blink&gt; tag shall guide your path."
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED | DO NOT STEAL MY HTML</div>
+  <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
+</div>
+
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+var oracleAnswers = [
+  "THE ANCIENT CODE SAYS: YES. PROCEED WITH COURAGE.",
+  "THE SCROLLS CONFIRM: YES, BUT BEWARE THE POPUP MINIONS.",
+  "ORACLE SPEAKS: NO. THIS PATH LEADS TO A 404 ERROR.",
+  "THE PROPHECY IS CLEAR: IT IS WRITTEN THAT YES.",
+  "CONSULTING NETSCAPE 1.0... THE ANSWER IS UNCERTAIN.",
+  "YES. THE MODEM HAS SPOKEN IN YOUR FAVOR.",
+  "NO. THE CRYSTAL BALL SHOWS A BLUE SCREEN OF DEATH.",
+  "THE ORACLE REQUIRES MORE DATA. ASK AGAIN.",
+  "DEFINITELY YES. YOUR IP ADDRESS GLOWS WITH DESTINY.",
+  "THE SCROLLS SAY: ONLY IF YOU SIGN THE GUESTBOOK FIRST."
+];
+
+function askOracle(){
+  var q = document.getElementById('oracle-q').value.trim();
+  if(!q){ document.getElementById('oracle-response').textContent = 'YOU MUST ASK A QUESTION FIRST.'; return; }
+  var el = document.getElementById('oracle-response');
+  el.textContent = 'CONSULTING THE ANCIENT ALGORITHM...';
+  setTimeout(function(){
+    el.textContent = oracleAnswers[Math.floor(Math.random()*oracleAnswers.length)];
+    document.getElementById('oracle-q').value = '';
+  }, 1500);
+}
+</script>
+</body>
+</html>
