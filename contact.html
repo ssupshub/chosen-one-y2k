@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CONTACT :: Chosen.net</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.form-section{border:2px solid var(--dark-green);background:var(--panel);padding:14px;margin-bottom:8px}
+.contact-method{border:2px solid #004400;background:#000a00;padding:10px;margin-bottom:8px}
+.cm-title{font-family:'VT323',monospace;font-size:20px;color:var(--yellow);letter-spacing:2px;margin-bottom:4px}
+.cm-detail{font-family:'VT323',monospace;font-size:16px;color:#00cc00;line-height:1.6}
+.msg-sent{border:2px solid var(--green);background:#001100;padding:12px;text-align:center;display:none}
+</style>
+</head>
+<body>
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** CONTACT THE COUNCIL OF ELDERS *** RESPONSE TIME: 3-5 BUSINESS MILLENNIA *** ALL MESSAGES ENCRYPTED WITH 56-BIT SECURITY *** NO SPAM — WE WILL KNOW ***</div>
+</div>
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="index.html">[HOME]</a>
+  <a href="mission.html">[MISSION]</a>
+  <a href="prophecy.html">[PROPHECY]</a>
+  <a href="enemies.html">[ENEMY FILES]</a>
+  <a href="weapons.html">[WEAPONS]</a>
+  <a href="alliances.html">[ALLIANCES]</a>
+  <a href="world.html">[WORLD MAP]</a>
+  <a href="guestbook.html">[GUESTBOOK]</a>
+  <a href="contact.html" class="active">[CONTACT]</a>
+</nav>
+
+<div class="page-header">
+  <h1>::: CONTACT THE COUNCIL :::</h1>
+  <div class="sub">REACH THE COUNCIL OF ELDERS // SECURE TRANSMISSION ONLY</div>
+</div>
+
+<div class="sidebar-layout">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="contact-method">
+      <div class="cm-title">::: EMAIL :::</div>
+      <div class="cm-detail">council@chosen.net<br><span style="color:#446644;font-size:14px">Response: 3-5 business days<br>(or millennia, depending on<br>the apocalypse status)</span></div>
+    </div>
+    <div class="contact-method">
+      <div class="cm-title">::: ICQ :::</div>
+      <div class="cm-detail">UIN: 12345678<br><span style="color:#446644;font-size:14px">Online: sporadically<br>Status: Uh Oh! (usually)</span></div>
+    </div>
+    <div class="contact-method">
+      <div class="cm-title">::: IRC :::</div>
+      <div class="cm-detail">#chosen-council<br>irc.undernet.org<br><span style="color:#446644;font-size:14px">Active: most evenings</span></div>
+    </div>
+    <div class="contact-method">
+      <div class="cm-title">::: AIM :::</div>
+      <div class="cm-detail">ScreenName: ElderByte42<br><span style="color:#446644;font-size:14px">Away msg: saving the world<br>brb</span></div>
+    </div>
+    <div class="contact-method">
+      <div class="cm-title">::: PHYSICAL :::</div>
+      <div class="cm-detail"><span style="color:#446644;font-size:14px">Moon Base Alpha<br>Council Chamber B<br>Far Side, The Moon<br>ZIP: 00001</span></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="form-section">
+      <div class="panel-title">::: SEND SECURE TRANSMISSION :::</div>
+      <label>YOUR CODENAME:</label>
+      <input type="text" id="c-name" placeholder="Enter your hero codename">
+      <label>YOUR EMAIL:</label>
+      <input type="email" id="c-email" placeholder="hero@internet.com">
+      <label>SUBJECT:</label>
+      <select id="c-subject" style="background:#000;color:var(--green);border:1px solid var(--dark-green);font-family:'Courier Prime',monospace;font-size:14px;padding:6px;width:100%;margin-bottom:6px">
+        <option value="">-- SELECT SUBJECT --</option>
+        <option>URGENT: Need backup vs MALKOR</option>
+        <option>Question about the Prophecy</option>
+        <option>Weapon malfunction report</option>
+        <option>Alliance request</option>
+        <option>Found a new enemy</option>
+        <option>The ZIP File password — I know it</option>
+        <option>Website feedback (constructive only)</option>
+        <option>Other heroic matter</option>
+      </select>
+      <label>THREAT LEVEL:</label>
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+        <label style="color:#00aa00;font-size:14px;display:flex;align-items:center;gap:4px"><input type="radio" name="threat" value="low"> LOW</label>
+        <label style="color:var(--yellow);font-size:14px;display:flex;align-items:center;gap:4px"><input type="radio" name="threat" value="medium"> MEDIUM</label>
+        <label style="color:var(--orange);font-size:14px;display:flex;align-items:center;gap:4px"><input type="radio" name="threat" value="high"> HIGH</label>
+        <label style="color:var(--red);font-size:14px;display:flex;align-items:center;gap:4px"><input type="radio" name="threat" value="critical"> CRITICAL</label>
+      </div>
+      <label>YOUR MESSAGE:</label>
+      <textarea id="c-msg" rows="6" placeholder="Describe your situation in detail. Include your current HP, location, and weapon loadout if relevant."></textarea>
+      <label style="display:flex;align-items:center;gap:8px;color:#446644;font-size:14px;margin-bottom:8px"><input type="checkbox" id="c-encrypt"> ENCRYPT MESSAGE (recommended)</label>
+      <button class="btn btn-green" onclick="sendContact()" style="width:100%">[ SEND TRANSMISSION ]</button>
+      <div id="send-result" style="font-family:'VT323',monospace;font-size:15px;margin-top:6px"></div>
+    </div>
+
+    <div class="msg-sent" id="success-box">
+      <div style="font-family:'VT323',monospace;font-size:22px;color:var(--green);letter-spacing:3px">TRANSMISSION SENT</div>
+      <div style="font-family:'VT323',monospace;font-size:16px;color:#00aa00;margin-top:6px">The Council has received your message.<br>A senior Elder will respond within 3-5 business millennia.<br>If the situation is CRITICAL, Wizard_42 has been auto-alerted.</div>
+      <div style="margin-top:10px"><a href="index.html" class="btn">[RETURN TO HOME]</a></div>
+    </div>
+
+    <div class="panel" style="margin-top:8px">
+      <div class="panel-title">::: COUNCIL HOURS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#446644;line-height:2">
+        MON-FRI: 9am - 5pm (Moon Standard Time)<br>
+        SAT: Emergency calls only<br>
+        SUN: Closed (Elder meditation day)<br>
+        APOCALYPSE: 24/7 availability<br>
+        <span style="color:#333">Holidays observed: Internet Day,<br>Netscape Birthday, Y2K Memorial</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED | DO NOT STEAL MY HTML</div>
+  <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
+</div>
+
+<script>
+function sendContact(){
+  var name = document.getElementById('c-name').value.trim();
+  var email = document.getElementById('c-email').value.trim();
+  var subject = document.getElementById('c-subject').value;
+  var msg = document.getElementById('c-msg').value.trim();
+  var res = document.getElementById('send-result');
+  if(!name){ res.style.color='var(--red)'; res.textContent='>>> ERROR: CODENAME REQUIRED.'; return; }
+  if(!email){ res.style.color='var(--red)'; res.textContent='>>> ERROR: EMAIL REQUIRED.'; return; }
+  if(!subject){ res.style.color='var(--red)'; res.textContent='>>> ERROR: SELECT A SUBJECT.'; return; }
+  if(!msg){ res.style.color='var(--red)'; res.textContent='>>> ERROR: MESSAGE CANNOT BE EMPTY.'; return; }
+  res.style.color='var(--yellow)';
+  res.textContent='>>> ENCRYPTING AND SENDING...';
+  setTimeout(function(){
+    document.querySelector('.form-section').style.display='none';
+    document.getElementById('success-box').style.display='block';
+  }, 2000);
+}
+</script>
+</body>
+</html>
