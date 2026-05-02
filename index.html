@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>YOU HAVE BEEN CHOSEN :: Home</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.title-ascii{font-size:11.5px;color:var(--green);line-height:1.1;white-space:pre;letter-spacing:0.5px;overflow-x:auto}
+.typewriter{overflow:hidden;white-space:nowrap;animation:typewriter 3.5s steps(55,end) both;font-family:'VT323',monospace;font-size:19px;color:#00ff88;margin-bottom:6px}
+.warning-box{border:2px dashed var(--red);padding:8px;background:#110000;text-align:center;margin:10px 0}
+.hero-ascii{white-space:pre;font-size:11px;line-height:1.1;color:#00cc00;font-family:'Courier Prime',monospace;text-align:center}
+.stat-bar{display:flex;align-items:center;gap:8px;margin:4px 0}
+.stat-label{font-family:'VT323',monospace;font-size:15px;color:#aaaaaa;width:40px;flex-shrink:0}
+.stat-val{font-family:'VT323',monospace;font-size:15px;color:var(--yellow);width:30px;flex-shrink:0;text-align:right}
+</style>
+</head>
+<body>
+
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** URGENT TRANSMISSION INCOMING *** YOU HAVE BEEN SELECTED BY THE ANCIENT ALGORITHM *** THE PROPHECY IS REAL *** DO NOT CLOSE THIS WINDOW *** YOUR IP HAS BEEN LOGGED *** SAVE THE WORLD BEFORE IT'S TOO LATE *** BEST VIEWED IN INTERNET EXPLORER 6 *** 800x600 RESOLUTION RECOMMENDED *** MALKOR.EXE SPREADS AS YOU READ THIS ***</div>
+</div>
+
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="index.html" class="active">[HOME]</a>
+  <a href="mission.html">[MISSION]</a>
+  <a href="prophecy.html">[PROPHECY]</a>
+  <a href="enemies.html">[ENEMY FILES]</a>
+  <a href="weapons.html">[WEAPONS]</a>
+  <a href="alliances.html">[ALLIANCES]</a>
+  <a href="world.html">[WORLD MAP]</a>
+  <a href="guestbook.html">[GUESTBOOK]</a>
+  <a href="contact.html">[CONTACT]</a>
+</nav>
+
+<div style="text-align:center;border:3px double var(--green);padding:10px;margin-bottom:8px;background:var(--panel)">
+  <div class="title-ascii">
+ ██╗   ██╗ ██████╗ ██╗   ██╗    ██╗  ██╗ █████╗ ██╗   ██╗███████╗    ██████╗ ███████╗███████╗███╗   ██╗
+ ╚██╗ ██╔╝██╔═══██╗██║   ██║    ██║  ██║██╔══██╗██║   ██║██╔════╝    ██╔══██╗██╔════╝██╔════╝████╗  ██║
+  ╚████╔╝ ██║   ██║██║   ██║    ███████║███████║██║   ██║█████╗      ██████╔╝█████╗  █████╗  ██╔██╗ ██║
+   ╚██╔╝  ██║   ██║██║   ██║    ██╔══██║██╔══██║╚██╗ ██╔╝██╔══╝      ██╔══██╗██╔══╝  ██╔══╝  ██║╚██╗██║
+    ██║   ╚██████╔╝╚██████╔╝    ██║  ██║██║  ██║ ╚████╔╝ ███████╗    ██████╔╝███████╗███████╗██║ ╚████║
+    ╚═╝    ╚═════╝  ╚═════╝     ╚═╝  ╚═╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝    ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═══╝</div>
+  <div style="font-family:'VT323',monospace;font-size:22px;color:var(--yellow);letter-spacing:4px;margin-top:4px">
+    <span class="star">★</span> CHOSEN BY THE ANCIENT CODE <span class="star">★</span> DEFENDER OF CYBERSPACE <span class="star">★</span>
+  </div>
+</div>
+
+<div class="visitor-bar">
+  <span>[ VISITOR COUNT: <span id="visits" style="color:var(--yellow)">000,041,337</span> ]</span>
+  <span class="blink">>>> YOU ARE VISITOR #41,337 <<<</span>
+  <span>[ PAGE LOADED: <span id="loadtime"></span> ]</span>
+  <span>[ LAST UPDATED: 04/28/2001 ]</span>
+</div>
+
+<div class="three-col">
+
+  <!-- LEFT SIDEBAR -->
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel">
+      <div class="panel-title">::: NAVIGATE :::</div>
+      <a href="index.html" style="display:block;color:var(--green);font-family:'VT323',monospace;font-size:16px;padding:3px 0;text-decoration:none" onmouseover="this.style.background='#00ff00';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#00ff00'">[HOME]</a>
+      <a href="mission.html" style="display:block;color:var(--green);font-family:'VT323',monospace;font-size:16px;padding:3px 0;text-decoration:none" onmouseover="this.style.background='#00ff00';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#00ff00'">[YOUR MISSION]</a>
+      <a href="prophecy.html" style="display:block;color:var(--green);font-family:'VT323',monospace;font-size:16px;padding:3px 0;text-decoration:none" onmouseover="this.style.background='#00ff00';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#00ff00'">[THE PROPHECY]</a>
+      <a href="enemies.html" style="display:block;color:var(--green);font-family:'VT323',monospace;font-size:16px;padding:3px 0;text-decoration:none" onmouseover="this.style.background='#00ff00';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#00ff00'">[ENEMY FILES]</a>
+      <a href="weapons.html" style="display:block;color:var(--green);font-family:'VT323',monospace;font-size:16px;padding:3px 0;text-decoration:none" onmouseover="this.style.background='#00ff00';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#00ff00'">[WEAPONS]</a>
+      <a href="alliances.html" style="display:block;color:var(--green);font-family:'VT323',monospace;font-size:16px;padding:3px 0;text-decoration:none" onmouseover="this.style.background='#00ff00';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#00ff00'">[ALLIANCES]</a>
+      <a href="world.html" style="display:block;color:var(--green);font-family:'VT323',monospace;font-size:16px;padding:3px 0;text-decoration:none" onmouseover="this.style.background='#00ff00';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#00ff00'">[WORLD MAP]</a>
+      <a href="guestbook.html" style="display:block;color:var(--green);font-family:'VT323',monospace;font-size:16px;padding:3px 0;text-decoration:none" onmouseover="this.style.background='#00ff00';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#00ff00'">[GUESTBOOK]</a>
+      <a href="contact.html" style="display:block;color:var(--green);font-family:'VT323',monospace;font-size:16px;padding:3px 0;text-decoration:none" onmouseover="this.style.background='#00ff00';this.style.color='#000'" onmouseout="this.style.background='';this.style.color='#00ff00'">[CONTACT ME]</a>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: YOUR STATS :::</div>
+      <div class="stat-bar"><span class="stat-label">HP</span><div class="prog-bar" style="flex:1;height:12px"><div class="prog-fill" style="width:80%"></div></div><span class="stat-val">80</span></div>
+      <div class="stat-bar"><span class="stat-label">MP</span><div class="prog-bar" style="flex:1;height:12px"><div class="prog-fill blue" style="width:60%"></div></div><span class="stat-val">60</span></div>
+      <div class="stat-bar"><span class="stat-label">XP</span><div class="prog-bar" style="flex:1;height:12px"><div class="prog-fill amber" style="width:30%"></div></div><span class="stat-val">30</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#aaffaa;margin-top:6px;line-height:1.7">
+        LVL: <span style="color:var(--yellow)">001</span><br>
+        CLASS: <span style="color:#ff88ff">CHOSEN ONE</span><br>
+        TITLE: <span style="color:#88aaff">NOVICE HERO</span><br>
+        KILLS: <span style="color:var(--red)">0</span><br>
+        DEATHS: <span style="color:#888">0</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: WEB RINGS :::</div>
+      <div class="badge">[COOL SITES]</div>
+      <div class="badge">[ANIME FAN]</div>
+      <div class="badge">[MIDI MUSIC]</div>
+      <div class="badge">[GEOCITIES]</div>
+      <div style="margin-top:8px;font-family:'VT323',monospace;font-size:13px;color:#555;text-align:center">UNDER CONSTRUCTION<br><span class="blink" style="color:#ffff00">▓▓░░░░░░ 25%</span></div>
+    </div>
+
+    <div class="panel" style="text-align:center">
+      <div class="hero-ascii">   .----.
+  ( o  o )
+   > (  ) <
+  /|  \/  |\
+  \|______|/
+  GUARDIAN
+  OF THE NET</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel">
+      <div class="typewriter">GREETINGS, TRAVELER OF THE INFORMATION SUPERHIGHWAY...</div>
+      <div style="font-family:'VT323',monospace;font-size:17px;color:#00dd00;line-height:1.6">
+        It is no coincidence that you have found this page.<br>
+        <span style="color:var(--yellow)">THE ANCIENT ALGORITHM</span> has chosen <span style="color:var(--red)" class="blink">YOU</span>.<br><br>
+        In the year <span style="color:var(--yellow)">2001</span>, a great darkness descends upon the world.<br>
+        The evil <span style="color:var(--red)">VIRUS LORD MALKOR.EXE</span> has escaped from a floppy disk<br>
+        in a secret government lab in <span style="color:var(--yellow)">New Mexico</span> and now threatens<br>
+        to corrupt ALL DATA on the internet by <span style="color:var(--red)">Y3K</span>.<br><br>
+        Only one soul — one brave enough to read this webpage —<br>
+        can stop him. Our mystic IP-scanner has detected that<br>
+        <span style="color:var(--yellow)">YOUR COMPUTER</span> possesses a rare quality...<br><br>
+        <span style="color:var(--red)" class="blink">>>> A HEROIC SOUL BEHIND THE KEYBOARD <<<</span>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <div style="font-family:'VT323',monospace;font-size:22px;color:var(--red)" class="blink">!!! WARNING — CRITICAL THREAT LEVEL: MAXIMUM !!!</div>
+      <div style="font-family:'VT323',monospace;font-size:16px;color:#ff6600;margin-top:4px">
+        IF YOU CLOSE THIS WINDOW, THE WORLD WILL BE DOOMED.<br>
+        MISSION BRIEFING SELF-DESTRUCTS IN: <span id="timer" style="color:var(--yellow)">10:00</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: WORLD THREAT STATUS :::</div>
+      <div class="prog-wrap">
+        <div class="prog-label">WORLD CORRUPTION LEVEL [CRITICAL]</div>
+        <div class="prog-bar"><div class="prog-fill red" style="width:23%"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label">HERO POWER DETECTED IN YOUR MODEM</div>
+        <div class="prog-bar"><div class="prog-fill" id="pb1"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label">PROPHECY FULFILLMENT STATUS</div>
+        <div class="prog-bar"><div class="prog-fill amber" id="pb2"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label">MALKOR.EXE INFECTION SPREAD</div>
+        <div class="prog-bar"><div class="prog-fill purple" id="pb3"></div></div>
+      </div>
+    </div>
+
+    <div style="border:3px solid var(--yellow);background:#111100;padding:12px;text-align:center">
+      <div style="font-family:'Press Start 2P',monospace;font-size:10px;color:var(--yellow);margin-bottom:10px;letter-spacing:2px">>>> ACCEPT YOUR DESTINY <<<</div>
+      <div style="font-family:'VT323',monospace;font-size:16px;color:#aaaaaa;margin-bottom:10px">Choose wisely. The fate of 6 billion souls rests on your next click.</div>
+      <a href="mission.html" class="btn">[ ACCEPT MISSION ]</a>
+      &nbsp;&nbsp;
+      <button class="btn btn-red" onclick="decline()">[ I AM A COWARD ]</button>
+      <div id="response-msg" style="font-family:'VT323',monospace;font-size:18px;color:var(--green);margin-top:8px;min-height:22px"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: LATEST NEWS FROM THE COUNCIL :::</div>
+      <div style="font-family:'VT323',monospace;font-size:16px;color:#00cc00;line-height:1.8">
+        <span style="color:var(--yellow)">[04/28/2001]</span> The Chosen One's arrival has been confirmed. Welcome.<br>
+        <span style="color:var(--yellow)">[04/27/2001]</span> MALKOR.EXE has infected Antarctica. Region OFFLINE.<br>
+        <span style="color:var(--yellow)">[04/25/2001]</span> The Sacred .ZIP File of Destiny has been located.<br>
+        <span style="color:var(--yellow)">[04/22/2001]</span> Asia threat level raised to DANGER. Defrag units deployed.<br>
+        <span style="color:var(--yellow)">[04/18/2001]</span> New weapons unlocked. See <a href="weapons.html" style="color:#4488ff">[WEAPONS PAGE]</a>.<br>
+        <span style="color:var(--yellow)">[04/10/2001]</span> Council of Elders website launched on GeoCities.
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel panel-orange" style="text-align:center">
+      <div style="font-family:'VT323',monospace;font-size:44px;color:var(--orange)" class="blink" id="threat">23</div>
+      <div style="font-family:'VT323',monospace;font-size:13px;color:#884400">HOURS UNTIL<br>APOCALYPSE</div>
+    </div>
+
+    <div class="panel panel-purple">
+      <div class="panel-title">::: THE PROPHECY :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#cc66ff;line-height:1.5">
+        "One who surfs<br>the web at dusk,<br>who hears the modem<br>sing and husk,<br>shall click the link,<br>and save us all<br>before the great<br>hard drive shall fall."<br><br>
+        <span style="color:#ff88ff">-- Scrolls of Netscape 1.0</span>
+      </div>
+      <div style="margin-top:6px"><a href="prophecy.html" class="btn" style="font-size:12px;padding:4px 10px">[READ MORE]</a></div>
+    </div>
+
+    <div class="panel panel-cyan">
+      <div class="panel-title">::: WORLD STATUS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;line-height:1.8">
+        <span style="color:var(--green)">● ONLINE</span> North America<br>
+        <span style="color:var(--green)">● ONLINE</span> Europe<br>
+        <span style="color:var(--yellow)" class="blink">● DANGER</span> Asia<br>
+        <span style="color:var(--red)" class="blink">● OFFLINE</span> Antarctica<br>
+        <span style="color:var(--green)">● ONLINE</span> Moon Base<br>
+        <span style="color:var(--green)">● ONLINE</span> Secret Bunker
+      </div>
+      <div style="margin-top:6px"><a href="world.html" class="btn" style="font-size:12px;padding:4px 10px">[WORLD MAP]</a></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: ALLY LIST :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;line-height:1.8">
+        <span style="color:var(--green)">Wizard_42</span> [LVL 99] ●<br>
+        <span style="color:var(--green)">DragonKid</span> [LVL 87] ●<br>
+        <span style="color:var(--yellow)">xXHero99Xx</span> [LVL 44] ●<br>
+        <span style="color:#888">CoolDude</span> [AFK] ○<br>
+        <span style="color:var(--red)">MALKOR</span> [ENEMY] ☠
+      </div>
+      <div style="margin-top:6px"><a href="alliances.html" class="btn" style="font-size:12px;padding:4px 10px">[VIEW ALL]</a></div>
+    </div>
+
+    <div class="panel panel-red" style="text-align:center">
+      <div style="font-family:'VT323',monospace;font-size:14px;color:var(--red)">RECENT ATTACKS:</div>
+      <div id="attack-log" style="font-family:'VT323',monospace;font-size:12px;color:#aa4444;line-height:1.6;text-align:left;margin-top:4px"></div>
+    </div>
+  </div>
+
+</div><!-- end three-col -->
+
+<div class="site-footer">
+  <div class="footer-text">
+    (C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED | DO NOT STEAL MY HTML<br>
+    <span class="badge">IE6 BEST</span><span class="badge">NETSCAPE OK</span><span class="badge">FRAMES OFF</span><span class="badge">JAVA ON</span><span class="badge">800x600</span><span class="badge">GEOCITIES PROUD</span>
+  </div>
+  <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
+</div>
+
+<script>
+// Visitor counter
+var visits = 41337;
+setInterval(function(){
+  visits += Math.floor(Math.random()*3);
+  document.getElementById('visits').textContent = visits.toLocaleString();
+}, 3000);
+
+// Countdown
+var mins = 9, secs = 59;
+setInterval(function(){
+  secs--; if(secs<0){secs=59;mins--;}
+  if(mins<0){mins=9;secs=59;}
+  document.getElementById('timer').textContent=(mins<10?'0':'')+mins+':'+(secs<10?'0':'')+secs;
+},1000);
+
+// Load time
+document.getElementById('loadtime').textContent = new Date().toLocaleTimeString();
+
+// Animated progress bars
+var pb1 = document.getElementById('pb1');
+var pb2 = document.getElementById('pb2');
+var pb3 = document.getElementById('pb3');
+var t = 0;
+setInterval(function(){
+  t += 0.02;
+  pb1.style.width = (55 + 18*Math.sin(t)) + '%';
+  pb2.style.width = (65 + 20*Math.sin(t*0.7+1)) + '%';
+  pb3.style.width = (35 + 15*Math.sin(t*1.3+2)) + '%';
+}, 100);
+
+// Decline button
+function decline(){
+  var el = document.getElementById('response-msg');
+  el.style.color='#ff2200';
+  el.textContent='>>> COWARD DETECTED. WORLD ENDING ACCELERATED BY 3 HOURS. SHAME.';
+}
+
+// Attack log
+var attacks = [
+  'POPUP_BOMB.EXE fired at EU-7',
+  'COOKIE_THIEF.BAT detected',
+  'DIALUP_DRAIN.VBS in Asia',
+  '404_PLAGUE spreading E. coast',
+  'BANNER_AD_WORM.EXE active',
+  'BUFFER_OVERFLOW in sector 9',
+  'VIRUS_ATTACH.EML received',
+  'SCREENSAVER_TROJAN on loose'
+];
+var ai = 0;
+var log = document.getElementById('attack-log');
+function addAttack(){
+  var d = document.createElement('div');
+  d.textContent = '>> ' + attacks[ai % attacks.length];
+  log.insertBefore(d, log.firstChild);
+  if(log.children.length > 5) log.removeChild(log.lastChild);
+  ai++;
+}
+addAttack(); addAttack(); addAttack();
+setInterval(addAttack, 4000);
+</script>
+</body>
+</html>
