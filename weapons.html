@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WEAPONS :: Chosen.net</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.weapon-card{border:2px solid #886600;background:#0a0800;padding:12px;margin-bottom:8px;cursor:pointer;transition:border-color 0.2s}
+.weapon-card:hover,.weapon-card.selected{border-color:var(--yellow);background:#110e00}
+.weapon-name{font-family:'VT323',monospace;font-size:22px;color:var(--yellow);letter-spacing:2px}
+.weapon-type{font-family:'VT323',monospace;font-size:14px;color:#886600;margin-bottom:6px}
+.weapon-ascii{white-space:pre;font-size:11px;color:#664400;font-family:'Courier Prime',monospace;float:right;margin-left:8px}
+.weapon-stat{font-family:'VT323',monospace;font-size:15px;color:#aa8800;margin:2px 0}
+.weapon-stat span{color:var(--green)}
+.weapon-desc{font-family:'VT323',monospace;font-size:15px;color:#887744;line-height:1.5;margin-top:6px}
+.equipped{background:#001100;border:1px solid var(--green);color:var(--green);font-family:'VT323',monospace;font-size:13px;padding:2px 8px;display:inline-block;margin-top:6px}
+.rarity-common{color:#aaaaaa}
+.rarity-rare{color:#4488ff}
+.rarity-epic{color:#aa44ff}
+.rarity-legendary{color:var(--orange)}
+.unlock-btn{background:#332200;color:#886600;border:1px solid #554400;font-family:'Courier Prime',monospace;font-size:12px;padding:4px 10px;cursor:pointer}
+.unlock-btn:hover{background:#554400;color:var(--yellow)}
+.unlock-btn.unlocked{background:#001100;color:var(--green);border-color:var(--dark-green);cursor:default}
+.loadout-slot{border:2px dashed #333;padding:8px;min-height:40px;font-family:'VT323',monospace;font-size:15px;color:#444;margin-bottom:6px}
+.loadout-slot.filled{border-color:#886600;color:var(--yellow)}
+</style>
+</head>
+<body>
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** HERO ARMORY — AUTHORIZED ACCESS ONLY *** NEW WEAPONS UNLOCKED *** AD-BLOCK CANNON FULLY CHARGED *** BROADBAND BLADE SHARPENED *** DEFRAG HAMMER READY ***</div>
+</div>
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="index.html">[HOME]</a>
+  <a href="mission.html">[MISSION]</a>
+  <a href="prophecy.html">[PROPHECY]</a>
+  <a href="enemies.html">[ENEMY FILES]</a>
+  <a href="weapons.html" class="active">[WEAPONS]</a>
+  <a href="alliances.html">[ALLIANCES]</a>
+  <a href="world.html">[WORLD MAP]</a>
+  <a href="guestbook.html">[GUESTBOOK]</a>
+  <a href="contact.html">[CONTACT]</a>
+</nav>
+
+<div class="page-header">
+  <h1 style="color:var(--yellow)">::: THE HERO ARMORY :::</h1>
+  <div class="sub">WEAPONS OF THE CHOSEN // SELECT YOUR LOADOUT</div>
+</div>
+
+<div class="three-col">
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel panel-orange">
+      <div class="panel-title" style="color:var(--orange)">::: YOUR LOADOUT :::</div>
+      <div style="font-family:'VT323',monospace;font-size:13px;color:#664400;margin-bottom:6px">Click weapons to equip (max 3)</div>
+      <div class="loadout-slot" id="slot1">[SLOT 1] — EMPTY</div>
+      <div class="loadout-slot" id="slot2">[SLOT 2] — EMPTY</div>
+      <div class="loadout-slot" id="slot3">[SLOT 3] — EMPTY</div>
+      <button class="btn" onclick="clearLoadout()" style="font-size:12px;padding:4px 10px;margin-top:4px">[ CLEAR ALL ]</button>
+    </div>
+
+    <div class="panel panel-orange">
+      <div class="panel-title" style="color:var(--orange)">::: COMBAT STATS :::</div>
+      <div class="prog-wrap">
+        <div class="prog-label">TOTAL ATTACK</div>
+        <div class="prog-bar"><div class="prog-fill amber" id="atk-bar" style="width:0%"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label">TOTAL DEFENSE</div>
+        <div class="prog-bar"><div class="prog-fill" id="def-bar" style="width:0%"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label">MAGIC POWER</div>
+        <div class="prog-bar"><div class="prog-fill purple" id="mag-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: RARITY KEY :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;line-height:2">
+        <span class="rarity-common">■ COMMON</span><br>
+        <span class="rarity-rare">■ RARE</span><br>
+        <span class="rarity-epic">■ EPIC</span><br>
+        <span class="rarity-legendary">■ LEGENDARY</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: INTERNET POINTS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:32px;color:var(--yellow);text-align:center" id="points">1,500</div>
+      <div style="font-family:'VT323',monospace;font-size:13px;color:#666;text-align:center">available to spend</div>
+    </div>
+  </div>
+
+  <div id="weapon-list">
+    <div class="weapon-card" data-atk="85" data-def="10" data-mag="0" data-name="AD-BLOCK CANNON" onclick="selectWeapon(this)">
+      <div class="weapon-ascii"> ___________
+|[BLOCK ADS]|========>
+|___________|</div>
+      <div class="weapon-name">AD-BLOCK CANNON <span class="rarity-rare">[RARE]</span></div>
+      <div class="weapon-type">TYPE: RANGED // CLASS: DIGITAL</div>
+      <div class="weapon-stat">ATTACK: <span>85</span> &nbsp; RANGE: <span>LONG</span> &nbsp; AMMO: <span>∞</span></div>
+      <div class="weapon-stat">EFFECTIVE AGAINST: <span>POPUP_GENERAL.EXE, BANNER_AD_WORM</span></div>
+      <div class="weapon-desc">Fires concentrated ad-block particles. Instantly destroys any popup within range. Recharges via righteous indignation. Standard issue for all heroes.</div>
+      <div><span class="unlock-btn unlocked">✓ UNLOCKED</span></div>
+    </div>
+
+    <div class="weapon-card" data-atk="120" data-def="5" data-mag="20" data-name="BROADBAND BLADE" onclick="selectWeapon(this)">
+      <div class="weapon-ascii">    /|
+   / |====
+  /  |
+ /   |
+/BBLD|</div>
+      <div class="weapon-name">BROADBAND BLADE <span class="rarity-epic">[EPIC]</span></div>
+      <div class="weapon-type">TYPE: MELEE // CLASS: NETWORK</div>
+      <div class="weapon-stat">ATTACK: <span>120</span> &nbsp; SPEED: <span>T1 LINE</span> &nbsp; CRIT: <span>25%</span></div>
+      <div class="weapon-stat">EFFECTIVE AGAINST: <span>DIALUP_DRAIN, BANDWIDTH VAMPIRES</span></div>
+      <div class="weapon-desc">Forged from the first fiber optic cable. Slices through dial-up interference. Enemies connected to 56k modems take triple damage.</div>
+      <div><span class="unlock-btn unlocked">✓ UNLOCKED</span></div>
+    </div>
+
+    <div class="weapon-card" data-atk="95" data-def="30" data-mag="10" data-name="DEFRAG HAMMER" onclick="selectWeapon(this)">
+      <div class="weapon-ascii">   _
+  | |
+  | |===[]
+  | |
+  |_|</div>
+      <div class="weapon-name">DEFRAG HAMMER OF THOR <span class="rarity-epic">[EPIC]</span></div>
+      <div class="weapon-type">TYPE: HEAVY MELEE // CLASS: ARCANE</div>
+      <div class="weapon-stat">ATTACK: <span>95</span> &nbsp; WEIGHT: <span>HEAVY</span> &nbsp; AoE: <span>YES</span></div>
+      <div class="weapon-stat">EFFECTIVE AGAINST: <span>CORRUPTED CRYSTAL BOSSES</span></div>
+      <div class="weapon-desc">Required for the Crystal Defrag mission. Shatters fragmented data into clean clusters. AoE slam attack hits all enemies in a sector. Takes 4–6 hours to cooldown.</div>
+      <div><span class="unlock-btn unlocked">✓ UNLOCKED</span></div>
+    </div>
+
+    <div class="weapon-card" data-atk="200" data-def="50" data-mag="100" data-name="ZIP FILE OF DESTINY" onclick="selectWeapon(this)">
+      <div class="weapon-ascii"> _________
+|SACRED   |
+|.ZIP FILE|
+|_________|
+ [LOCKED]</div>
+      <div class="weapon-name">SACRED .ZIP FILE OF DESTINY <span class="rarity-legendary">[LEGENDARY]</span></div>
+      <div class="weapon-type">TYPE: ARTIFACT // CLASS: ULTIMATE</div>
+      <div class="weapon-stat">ATTACK: <span>200</span> &nbsp; MAGIC: <span>100</span> &nbsp; USES: <span>1</span></div>
+      <div class="weapon-stat">EFFECTIVE AGAINST: <span>MALKOR.EXE ONLY (FINAL BOSS)</span></div>
+      <div class="weapon-desc">The ultimate weapon of the prophecy. Contains the source code of reality itself. REQUIRES THE PASSWORD OF AGES to unzip. Do not lose this file.</div>
+      <div id="zip-btn"><button class="unlock-btn" onclick="unlockZip(event)">[ UNLOCK — 1000 pts ]</button></div>
+    </div>
+
+    <div class="weapon-card" data-atk="40" data-def="70" data-mag="0" data-name="INCOGNITO SHIELD" onclick="selectWeapon(this)">
+      <div class="weapon-ascii">  ______
+ / #### \
+| SHIELD |
+ \______/</div>
+      <div class="weapon-name">INCOGNITO SHIELD <span class="rarity-rare">[RARE]</span></div>
+      <div class="weapon-type">TYPE: DEFENSIVE // CLASS: STEALTH</div>
+      <div class="weapon-stat">DEFENSE: <span>70</span> &nbsp; STEALTH: <span>HIGH</span> &nbsp; COOKIES: <span>BLOCKED</span></div>
+      <div class="weapon-stat">EFFECTIVE AGAINST: <span>COOKIE_THIEF, TRACKING WORMS</span></div>
+      <div class="weapon-desc">Renders you invisible to cookie-based tracking. Enemies cannot steal your session data. Pairs well with Cookie Crumbler. Looks like a private browsing window.</div>
+      <div><span class="unlock-btn unlocked">✓ UNLOCKED</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel">
+      <div class="panel-title">::: TIPS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#888;line-height:1.8">
+        MAX LOADOUT: 3 weapons<br><br>
+        SAVE ZIP FILE for<br>MALKOR fight only<br><br>
+        AD-BLOCK CANNON<br>is best vs popup spam<br><br>
+        BROADBAND BLADE<br>loses power on dial-up<br><br>
+        DEFRAG HAMMER<br>breaks CRYSTAL bosses
+      </div>
+    </div>
+    <div class="panel panel-orange">
+      <div class="panel-title" style="color:var(--orange)">::: COMING SOON :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#664400;line-height:1.8">
+        <span style="color:#333">COOKIE CRUMBLER</span><br>
+        <span style="color:#333">FIREWALL GAUNTLETS</span><br>
+        <span style="color:#333">MODEM WHIP</span><br>
+        <span style="color:#333">PING OF DEATH</span><br>
+        <span style="color:#333">FLOPPY DISK BOOMERANG</span>
+      </div>
+      <div style="font-family:'VT323',monospace;font-size:12px;color:#333;margin-top:6px" class="blink">// UNDER CONSTRUCTION //</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED | DO NOT STEAL MY HTML</div>
+  <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
+</div>
+
+<script>
+var loadout = [null, null, null];
+var points = 1500;
+
+function selectWeapon(card) {
+  var name = card.dataset.name;
+  // Already in loadout?
+  var idx = loadout.indexOf(name);
+  if(idx !== -1) {
+    loadout[idx] = null;
+    card.classList.remove('selected');
+    updateLoadout();
+    return;
+  }
+  // Find empty slot
+  var emptySlot = loadout.indexOf(null);
+  if(emptySlot === -1) { alert('LOADOUT FULL! Remove a weapon first.'); return; }
+  loadout[emptySlot] = name;
+  card.classList.add('selected');
+  updateLoadout();
+}
+
+function clearLoadout() {
+  loadout = [null, null, null];
+  document.querySelectorAll('.weapon-card').forEach(function(c){ c.classList.remove('selected'); });
+  updateLoadout();
+}
+
+function updateLoadout() {
+  var totalAtk = 0, totalDef = 0, totalMag = 0;
+  for(var i=0;i<3;i++) {
+    var slot = document.getElementById('slot'+(i+1));
+    if(loadout[i]) {
+      slot.textContent = '[SLOT '+(i+1)+'] — '+loadout[i];
+      slot.classList.add('filled');
+      var card = Array.from(document.querySelectorAll('.weapon-card')).find(function(c){ return c.dataset.name===loadout[i]; });
+      if(card){ totalAtk+=parseInt(card.dataset.atk||0); totalDef+=parseInt(card.dataset.def||0); totalMag+=parseInt(card.dataset.mag||0); }
+    } else {
+      slot.textContent = '[SLOT '+(i+1)+'] — EMPTY';
+      slot.classList.remove('filled');
+    }
+  }
+  document.getElementById('atk-bar').style.width = Math.min(totalAtk/4, 100) + '%';
+  document.getElementById('def-bar').style.width = Math.min(totalDef/1.5, 100) + '%';
+  document.getElementById('mag-bar').style.width = Math.min(totalMag, 100) + '%';
+}
+
+function unlockZip(e) {
+  e.stopPropagation();
+  if(points < 1000) { alert('NOT ENOUGH INTERNET POINTS!'); return; }
+  points -= 1000;
+  document.getElementById('points').textContent = points.toLocaleString();
+  document.getElementById('zip-btn').innerHTML = '<span class="unlock-btn unlocked">✓ UNLOCKED</span>';
+}
+</script>
+</body>
+</html>
