@@ -176,6 +176,7 @@
   <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
 </div>
 
+<script src="api.js"></script>
 <script>
 function toggleMsg(btn){
   var box = btn.nextElementSibling;
@@ -183,52 +184,94 @@ function toggleMsg(btn){
 }
 
 var allyReplies = {
-  wizard: ["Close to cracking that ZIP password! Stay ready.", "The HTML scrolls speak of you, Chosen One.", "My CSS detection spell is working. MALKOR is weakening.", "Level 99 has perks. I can see everything."],
-  dragon: ["BACKUP NEEDED! Asia sector falling fast!!", "My dragon Compaq is injured but fighting.", "We hold the line. But not for long alone.", "The Chosen One arrives! Dragon roars in your honor."],
-  hero: ["shhh. in 5t34lth m0d3. d0n't bl0w my c0v3r", "h4x0r mode activ4ted. MALKOR won't see me.", "l33t hero reporting in. mission proceeding", "c4n't t4lk. t00 busy b31ng aw3s0me"]
+  wizard: ["Close to cracking that ZIP password! Stay ready.", "The HTML scrolls speak of you, Chosen One.", "MALKOR is weakening. My level 99 detection confirms it."],
+  dragon: ["BACKUP NEEDED! Asia sector falling fast!!", "My dragon Compaq is injured but fighting on.", "The Chosen One speaks! Dragon roars in your honor."],
+  hero: ["shhh. in 5t34lth m0d3.", "h4x0r mode activ4ted. MALKOR won't see me.", "c4n't t4lk. t00 busy b31ng aw3s0me"]
 };
 
-function sendMsg(who, name, input){
+// ── Private ally DM (still local + simulated reply posted to backend) ─────
+function sendMsg(who, nameStr, input){
   var text = input.value.trim();
   if(!text) return;
   var chat = document.getElementById('chat-'+who);
   var d = document.createElement('div');
-  d.style.fontFamily='VT323,monospace'; d.style.fontSize='14px'; d.style.padding='2px 0'; d.style.color='#00cc00';
+  d.style.cssText='font-family:VT323,monospace;font-size:14px;padding:2px 0;color:#00cc00';
   d.textContent = 'YOU: ' + text;
   chat.appendChild(d);
   input.value = '';
+
+  // Post to backend as a private channel message
+  API.postChat(API.getHeroName(), text, 'dm-'+who).catch(function(){});
+
+  // Ally reply comes back from backend (which auto-replies)
   setTimeout(function(){
-    var replies = allyReplies[who];
-    var r = document.createElement('div');
-    r.style.fontFamily='VT323,monospace'; r.style.fontSize='14px'; r.style.padding='2px 0'; r.style.color='#4488ff';
-    r.textContent = name + ': ' + replies[Math.floor(Math.random()*replies.length)];
-    chat.appendChild(r);
-    chat.scrollTop = chat.scrollHeight;
-  }, 1000 + Math.random()*1000);
+    API.getChat('dm-'+who, 0).then(function(data){
+      var msgs = data.messages;
+      var reply = msgs.filter(function(m){ return m.sender !== 'HERO' && m.sender !== API.getHeroName(); });
+      var last  = reply[reply.length-1];
+      if(last){
+        var r = document.createElement('div');
+        r.style.cssText='font-family:VT323,monospace;font-size:14px;padding:2px 0;color:#4488ff';
+        r.textContent = last.sender + ': ' + last.message;
+        chat.appendChild(r);
+        chat.scrollTop = chat.scrollHeight;
+      }
+    }).catch(function(){
+      // Fallback reply
+      var r = document.createElement('div');
+      r.style.cssText='font-family:VT323,monospace;font-size:14px;padding:2px 0;color:#4488ff';
+      var replies = allyReplies[who];
+      r.textContent = nameStr + ': ' + replies[Math.floor(Math.random()*replies.length)];
+      chat.appendChild(r);
+      chat.scrollTop = chat.scrollHeight;
+    });
+  }, 1200 + Math.random()*800);
+}
+
+// ── Global alliance chat (real backend) ───────────────────────────────────
+var lastChatId = 0;
+
+function renderGlobalMsg(m){
+  var chat  = document.getElementById('global-chat');
+  var isMe  = (m.sender === 'YOU' || m.sender === API.getHeroName());
+  var div   = document.createElement('div');
+  div.className = 'chat-msg';
+  var time  = m.created_at ? m.created_at.slice(11,16) : 'now';
+  div.innerHTML =
+    '<span class="who" style="color:'+(isMe?'#00ff88':'#4488ff')+'">'+ m.sender +':</span> ' +
+    '<span style="color:'+(isMe?'#aaffaa':'#aaaaff')+'">'+m.message+'</span> ' +
+    '<span class="time">['+time+']</span>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  if(m.id > lastChatId) lastChatId = m.id;
+}
+
+function pollGlobalChat(){
+  API.getChat('global', lastChatId).then(function(data){
+    data.messages.forEach(renderGlobalMsg);
+  }).catch(function(){});
 }
 
 function globalChat(){
   var input = document.getElementById('global-input');
-  var text = input.value.trim(); if(!text) return;
-  var chat = document.getElementById('global-chat');
-  var d = document.createElement('div');
-  d.className = 'chat-msg';
-  d.innerHTML = '<span class="who" style="color:#00ff88">YOU:</span> <span style="color:#aaffaa">'+text+'</span> <span class="time">[just now]</span>';
-  chat.appendChild(d);
-  chat.scrollTop = chat.scrollHeight;
+  var text  = input.value.trim();
+  if(!text) return;
   input.value = '';
-  var responses = ['Wizard_42: Good to hear from you, Chosen One.', 'DragonKid: Glad you are here. We need all the help we can get!', 'Council: All eyes on the Chosen One. The prophecy unfolds.'];
-  setTimeout(function(){
-    var r = document.createElement('div');
-    r.className = 'chat-msg';
-    var resp = responses[Math.floor(Math.random()*responses.length)];
-    var parts = resp.split(': ');
-    r.innerHTML = '<span class="who">'+parts[0]+':</span> <span style="color:#aaaaff">'+parts.slice(1).join(': ')+'</span> <span class="time">[just now]</span>';
-    chat.appendChild(r); chat.scrollTop=chat.scrollHeight;
-  }, 1500);
+  // Render own message immediately
+  renderGlobalMsg({ sender: 'YOU', message: text, created_at: new Date().toISOString(), id: 0 });
+  // Post to backend; response includes auto ally reply
+  API.postChat(API.getHeroName(), text, 'global')
+    .then(function(data){ data.messages.forEach(renderGlobalMsg); })
+    .catch(function(){});
 }
 
+// Poll for new messages every 4 seconds
+pollGlobalChat();
+setInterval(pollGlobalChat, 4000);
+
+// ── Flare ─────────────────────────────────────────────────────────────────
 function sendFlare(){
+  API.postEvent('ALL', 'DISTRESS FLARE from ' + API.getHeroName() + '. BACKUP REQUESTED.').catch(function(){});
   document.getElementById('flare-msg').textContent = '>>> FLARE SENT! 3 ALLIES NOTIFIED. BACKUP ETA: 5 MINUTES.';
   setTimeout(function(){ document.getElementById('flare-msg').textContent=''; }, 4000);
 }
