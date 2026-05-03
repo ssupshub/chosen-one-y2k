@@ -170,6 +170,10 @@
       <div id="battle-log" style="font-family:'VT323',monospace;font-size:13px;color:#aa4444;line-height:1.7;min-height:80px">No battles yet...<br>Engage an enemy to begin.</div>
     </div>
     <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: LEADERBOARD :::</div>
+      <div id="leaderboard" style="font-family:'VT323',monospace;font-size:13px;color:#aa4444;line-height:1.8">Loading...</div>
+    </div>
+    <div class="panel panel-red">
       <div class="panel-title" style="color:var(--red)">::: MALKOR STATUS :::</div>
       <div style="font-family:'VT323',monospace;font-size:14px;color:#884444;line-height:1.7">
         LAST SEEN:<br><span style="color:var(--yellow)">SERVER 7-B, SECTOR 9</span><br><br>
@@ -195,41 +199,76 @@
   <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED | DO NOT STEAL MY HTML</div>
   <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
 </div>
+<script src="api.js"></script>
 <script>
 var kills = 0;
+var totalXP = 0;
 var battleLog = [];
+
+var XP_MAP = {
+  'MALKOR': 500, 'POPUP': 150, 'COOKIE': 120,
+  'DIALUP': 80,  'WORM':  30
+};
 
 function defeat(btn, name){
   var card = btn.closest('.enemy-card');
   if(card.dataset.defeated === 'true') return;
   card.dataset.defeated = 'true';
   btn.textContent = '[ DEFEATED ]';
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.style.background = '#003300';
-  btn.style.color = '#00aa00';
-  card.style.opacity = '0.5';
-  kills++;
+  btn.style.color      = '#00aa00';
+  card.style.opacity   = '0.5';
+
+  var xpGain = XP_MAP[name] || 50;
+  kills   += 1;
+  totalXP += xpGain;
+
   document.getElementById('killcount').textContent = kills;
-  var msg = '[' + new Date().toLocaleTimeString() + '] ' + name + ' defeated! +XP';
+
+  var msg = '[' + new Date().toLocaleTimeString() + '] ' + name + ' defeated! +' + xpGain + ' XP';
   battleLog.unshift(msg);
   if(battleLog.length > 6) battleLog.pop();
   document.getElementById('battle-log').innerHTML = battleLog.join('<br>');
+
+  // Post world event
+  API.postEvent('BATTLEFIELD', name + ' defeated by ' + API.getHeroName()).catch(function(){});
+
+  // Sync score to backend
+  API.updateScore(totalXP, kills).catch(function(){});
 }
 
 function filterEnemies(){
-  var q = document.getElementById('search').value.toLowerCase();
-  var critOnly = document.getElementById('f-critical').checked;
+  var q            = document.getElementById('search').value.toLowerCase();
+  var critOnly     = document.getElementById('f-critical').checked;
   var hideDefeated = document.getElementById('f-defeated').checked;
   document.querySelectorAll('.enemy-card').forEach(function(card){
-    var name = card.dataset.name.toLowerCase();
-    var level = card.dataset.level;
+    var name     = card.dataset.name.toLowerCase();
+    var level    = card.dataset.level;
     var defeated = card.dataset.defeated === 'true';
-    var show = name.includes(q);
+    var show     = name.includes(q);
     if(critOnly && level !== 'critical') show = false;
-    if(hideDefeated && defeated) show = false;
+    if(hideDefeated && defeated)         show = false;
     card.style.display = show ? '' : 'none';
   });
 }
+
+// Load leaderboard
+function loadLeaderboard(){
+  API.getLeaderboard().then(function(data){
+    var el = document.getElementById('leaderboard');
+    if(!data.leaderboard.length){ el.textContent = 'No scores yet.'; return; }
+    el.innerHTML = data.leaderboard.slice(0,5).map(function(s,i){
+      return '<span style="color:var(--yellow)">#'+(i+1)+'</span> ' +
+             s.hero_name + ' &mdash; <span style="color:var(--green)">' + s.xp + ' XP</span> / ' +
+             s.kills + ' kills';
+    }).join('<br>');
+  }).catch(function(){
+    document.getElementById('leaderboard').textContent = 'BACKEND OFFLINE';
+  });
+}
+loadLeaderboard();
+setInterval(loadLeaderboard, 10000);
 </script>
 </body>
 </html>
