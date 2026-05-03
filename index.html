@@ -229,13 +229,18 @@
   <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
 </div>
 
+<script src="api.js"></script>
 <script>
-// Visitor counter
-var visits = 41337;
+// ── Visitor counter (live from backend) ──────────────────────────────────
+API.incrementVisitors().then(function(d){
+  document.getElementById('visits').textContent = d.count.toLocaleString();
+}).catch(function(){});
+
 setInterval(function(){
-  visits += Math.floor(Math.random()*3);
-  document.getElementById('visits').textContent = visits.toLocaleString();
-}, 3000);
+  API.getVisitors().then(function(d){
+    document.getElementById('visits').textContent = d.count.toLocaleString();
+  }).catch(function(){});
+}, 5000);
 
 // Countdown
 var mins = 9, secs = 59;
@@ -267,28 +272,26 @@ function decline(){
   el.textContent='>>> COWARD DETECTED. WORLD ENDING ACCELERATED BY 3 HOURS. SHAME.';
 }
 
-// Attack log
-var attacks = [
-  'POPUP_BOMB.EXE fired at EU-7',
-  'COOKIE_THIEF.BAT detected',
-  'DIALUP_DRAIN.VBS in Asia',
-  '404_PLAGUE spreading E. coast',
-  'BANNER_AD_WORM.EXE active',
-  'BUFFER_OVERFLOW in sector 9',
-  'VIRUS_ATTACH.EML received',
-  'SCREENSAVER_TROJAN on loose'
-];
-var ai = 0;
-var log = document.getElementById('attack-log');
-function addAttack(){
-  var d = document.createElement('div');
-  d.textContent = '>> ' + attacks[ai % attacks.length];
-  log.insertBefore(d, log.firstChild);
-  if(log.children.length > 5) log.removeChild(log.lastChild);
-  ai++;
+// Live world events from backend
+function loadEvents(){
+  API.getEvents(5).then(function(d){
+    var log = document.getElementById('attack-log');
+    log.innerHTML = '';
+    d.events.forEach(function(ev){
+      var div = document.createElement('div');
+      div.textContent = '>> [' + ev.region + '] ' + ev.event_text;
+      log.appendChild(div);
+    });
+  }).catch(function(){
+    // fallback static events if backend is down
+    var log = document.getElementById('attack-log');
+    if(!log.innerHTML.trim()){
+      log.innerHTML = '>> POPUP_BOMB.EXE fired at EU-7<br>>> COOKIE_THIEF.BAT detected<br>>> DIALUP_DRAIN.VBS in Asia';
+    }
+  });
 }
-addAttack(); addAttack(); addAttack();
-setInterval(addAttack, 4000);
+loadEvents();
+setInterval(loadEvents, 6000);
 </script>
 </body>
 </html>
