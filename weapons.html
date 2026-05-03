@@ -192,6 +192,7 @@
   <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
 </div>
 
+<script src="api.js"></script>
 <script>
 var loadout = [null, null, null];
 var points = 1500;
@@ -237,6 +238,9 @@ function updateLoadout() {
   document.getElementById('atk-bar').style.width = Math.min(totalAtk/4, 100) + '%';
   document.getElementById('def-bar').style.width = Math.min(totalDef/1.5, 100) + '%';
   document.getElementById('mag-bar').style.width = Math.min(totalMag, 100) + '%';
+  // Sync loadout power as XP contribution to backend
+  var loadoutXP = totalAtk + totalDef + totalMag;
+  API.updateScore(loadoutXP, 0).catch(function(){});
 }
 
 function unlockZip(e) {
@@ -244,8 +248,18 @@ function unlockZip(e) {
   if(points < 1000) { alert('NOT ENOUGH INTERNET POINTS!'); return; }
   points -= 1000;
   document.getElementById('points').textContent = points.toLocaleString();
-  document.getElementById('zip-btn').innerHTML = '<span class="unlock-btn unlocked">✓ UNLOCKED</span>';
+  document.getElementById('zip-btn').innerHTML = '<span class="unlock-btn unlocked">&#10003; UNLOCKED</span>';
+  API.postEvent('ARMORY', API.getHeroName() + ' unlocked the SACRED ZIP FILE OF DESTINY').catch(function(){});
 }
+
+// Load current score on page load
+API.getLeaderboard().then(function(data){
+  // Show top hero if any scores exist
+  if(data.leaderboard && data.leaderboard.length){
+    var top = data.leaderboard[0];
+    console.log('[ARMORY] Top hero: ' + top.hero_name + ' — ' + top.xp + ' XP');
+  }
+}).catch(function(){});
 </script>
 </body>
 </html>
