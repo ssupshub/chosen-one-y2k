@@ -159,6 +159,7 @@
   <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
 </div>
 
+<script src="api.js"></script>
 <script>
 var regions = {
   'north-america': {name:'NORTH AMERICA',status:'ONLINE',color:'#00ff00',threat:'LOW',internet:'98.7%',servers:'4,200',allies:'Wizard_42 (nearby)',mission:'Patrol only. No active threats.',population:'300M online users',notes:'Council HQ located in Sector NA-7. Safest region.'},
@@ -190,33 +191,39 @@ function showRegion(id){
 }
 
 function deploy(){
-  var sel = document.getElementById('deploy-region');
+  var sel    = document.getElementById('deploy-region');
   var region = sel.value;
   if(!region){ document.getElementById('deploy-msg').textContent='SELECT A REGION FIRST.'; return; }
+  var regionName = region === 'ant' ? 'ANTARCTICA' : sel.options[sel.selectedIndex].text.toUpperCase();
   var msg = region === 'ant'
-    ? '>>> WARNING: DEPLOYING TO ANTARCTICA. CORRUPTION IMMINENT. ARE YOU SURE?? (not actually possible)'
-    : '>>> HERO DEPLOYED TO ' + region.toUpperCase() + '! TRAVEL TIME: 2 HOURS BY DIAL-UP CARRIER.';
+    ? '>>> WARNING: DEPLOYING TO ANTARCTICA. CORRUPTION IMMINENT.'
+    : '>>> HERO DEPLOYED TO ' + regionName + '! TRAVEL TIME: 2 HOURS BY DIAL-UP CARRIER.';
   document.getElementById('deploy-msg').textContent = msg;
+  // Post deployment event to backend
+  API.postEvent(regionName, 'HERO deployed to ' + regionName).catch(function(){});
 }
 
-// Live event ticker
-var events = [
-  'N.AMERICA popup repelled', 'EUROPE firewall updated', 'ASIA servers falling fast',
-  'MOON laser charged', 'BUNKER Council meeting', 'RUSSIA anomaly detected',
-  'AFRICA crystal guarded', 'M.EAST ZIP secured', 'S.AMERICA patrol normal'
-];
-var ei = 0;
-setInterval(function(){
-  var log = document.getElementById('event-log');
-  var d = document.createElement('div');
-  d.className = 'event-item';
-  d.innerHTML = events[ei%events.length] + ' <span class="event-time">[just now]</span>';
-  log.insertBefore(d, log.firstChild);
-  if(log.children.length > 6) log.removeChild(log.lastChild);
-  ei++;
-}, 5000);
+// ── Live events from backend ──────────────────────────────────────────────
+function loadWorldEvents(){
+  API.getEvents(6).then(function(data){
+    var log = document.getElementById('event-log');
+    log.innerHTML = '';
+    data.events.forEach(function(ev){
+      var d = document.createElement('div');
+      d.className = 'event-item';
+      var time = ev.created_at ? ev.created_at.slice(11,16) : '';
+      d.innerHTML = '['+ev.region+'] '+ev.event_text+' <span class="event-time">['+time+']</span>';
+      log.appendChild(d);
+    });
+  }).catch(function(){
+    // Fallback: static events already in HTML
+  });
+}
 
-// Slowly animate corruption bar
+loadWorldEvents();
+setInterval(loadWorldEvents, 5000);
+
+// Slowly grow corruption bar
 var corr = 23;
 setInterval(function(){
   corr = Math.min(100, corr + (Math.random() > 0.7 ? 1 : 0));
