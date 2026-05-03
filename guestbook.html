@@ -119,91 +119,75 @@
   <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
 </div>
 
+<script src="api.js"></script>
 <script>
 var starRating = 0;
+var currentPage = 1;
+var totalPages  = 1;
+
 function setStars(n){
   starRating = n;
-  var spans = document.querySelectorAll('#star-row span');
-  spans.forEach(function(s,i){ s.classList.toggle('lit', i < n); });
+  document.querySelectorAll('#star-row span').forEach(function(s,i){
+    s.classList.toggle('lit', i < n);
+  });
 }
 
-var defaultEntries = [
-  {name:'Wizard_42',location:'Server Room Alpha, Sector 3',msg:'I have been waiting for the Chosen One for SEVEN YEARS. You are finally here. Do not fail us. The password is almost cracked. P.S. nice website.',stars:5,date:'04/28/2001',avatar:'  .--.\n ( ^^ )\n  \\  /\n MAGE'},
-  {name:'DragonKid',location:'Asia Region, Fighting Zone',msg:'CHOSEN ONE. COME TO ASIA. WE ARE LOSING THE SERVERS. BRING THE AD-BLOCK CANNON AND THE DEFRAG HAMMER. MY DRAGON IS TIRED. BACKUP NEEDED NOW.',stars:5,date:'04/27/2001',avatar:' /\\ /\\\n( >< )\n dragon'},
-  {name:'xXHero99Xx',location:'CLASSIFIED',msg:'n1c3 w3bs1t3 ch0s3n 0n3. w3 h4v3 b33n w41t1ng. th3 pr0ph3cy 1s r34l. s33 u 0n th3 b4ttl3f13ld. br1ng ur b3st w34p0nz. gl hf',stars:4,date:'04/26/2001',avatar:' _/\\_\n(-.-)\n h4x0r'},
-  {name:'ElderByte',location:'Council Chambers, Moon Base',msg:'Child. You have found the page. The algorithm does not lie. Welcome to your destiny. We have prepared everything. The scrolls foresaw this exact moment. Do not forget to sign the guestbook again on your way out.',stars:5,date:'04/25/2001',avatar:' ___ \n|old|\n elder'},
-  {name:'GeoCity_Gary',location:'GeoCities, USA',msg:'wow cool site!! i made my own site too its about my cat mr whiskers check it out!!! also good luck with the whole saving the world thing lol sounds hard. i'll pray for u!!',stars:3,date:'04/24/2001',avatar:' =^.^=\n cat guy'},
-  {name:'DialUp_Dana',location:'56k Connection, Suburb',msg:'this page took 45 minutes to load on my modem but it was WORTH IT. you truly are the chosen one. my modem sang when i connected. just like the prophecy said. amazing. bookmarked.',stars:5,date:'04/23/2001',avatar:' ~kshhh~\n56k user'},
-  {name:'h4x0rPr1nc3ss',location:'Somewhere on the Internet',msg:'hello chosen one. i hacked into this guestbook to leave a message. do not worry i am on your side. i have intel on malkor that will help you. email me. i have already left the info in a secret folder.',stars:4,date:'04/22/2001',avatar:' $h3ll\n h4x0r'},
-  {name:'GeekDad2001',location:'Dad\'s Computer, Basement',msg:'Hello. My daughter showed me this website. I am not sure what is happening but she says I need to sign this book. Best of luck with the computer problem. We have Norton so we should be fine.',stars:2,date:'04/21/2001',avatar:' :)\n geekdad'}
-];
-
-var userEntries = [];
-var currentPage = 1;
-var entriesPerPage = 4;
-
-function getAllEntries(){
-  return userEntries.concat(defaultEntries);
-}
-
-function renderEntries(){
-  var all = getAllEntries();
-  var start = (currentPage-1)*entriesPerPage;
-  var page = all.slice(start, start+entriesPerPage);
+function renderEntries(data){
+  totalPages  = data.pages;
+  currentPage = data.page;
+  document.getElementById('page-display').textContent = currentPage;
+  document.getElementById('entry-count').textContent  = data.total;
   var container = document.getElementById('entries-container');
   container.innerHTML = '';
-  if(page.length === 0){ container.innerHTML = '<div style="font-family:\'VT323\',monospace;font-size:18px;color:#336633;text-align:center;padding:20px">NO ENTRIES ON THIS PAGE</div>'; return; }
-  page.forEach(function(e, i){
+  if(!data.entries.length){
+    container.innerHTML = '<div style="font-family:\'VT323\',monospace;font-size:18px;color:#336633;text-align:center;padding:20px">NO ENTRIES ON THIS PAGE</div>';
+    return;
+  }
+  data.entries.forEach(function(e, i){
     var stars = '';
-    for(var s=0;s<5;s++) stars += s<e.stars ? '<span style="color:var(--yellow)">★</span>' : '<span style="color:#333">★</span>';
-    var div = document.createElement('div');
+    for(var s=0;s<5;s++) stars += s < e.stars ? '<span style="color:var(--yellow)">&#9733;</span>' : '<span style="color:#333">&#9733;</span>';
+    var date  = e.created_at ? e.created_at.slice(0,10) : '';
+    var div   = document.createElement('div');
     div.className = 'entry';
     div.style.animationDelay = (i*0.1)+'s';
-    div.innerHTML = '<div class="entry-header"><div class="entry-name">'+e.name+'</div><div class="entry-meta">'+e.location+' // '+e.date+'</div></div>'+
-      (e.avatar?'<pre class="entry-avatar">'+e.avatar+'</pre>':'')+
-      '<div class="entry-msg">'+e.msg+'</div>'+
-      '<div style="margin-top:6px">'+stars+'</div>'+
-      '<div style="clear:both"></div>';
+    div.innerHTML = '<div class="entry-header"><div class="entry-name">'+e.name+'</div><div class="entry-meta">'+e.location+' // '+date+'</div></div><div class="entry-msg">'+e.message+'</div><div style="margin-top:6px">'+stars+'</div>';
     container.appendChild(div);
   });
-  document.getElementById('entry-count').textContent = all.length;
+  document.querySelectorAll('.page-num').forEach(function(el,i){ el.classList.toggle('active', i+1===currentPage); });
 }
 
-function setPage(n){
-  var total = Math.ceil(getAllEntries().length/entriesPerPage);
-  currentPage = Math.max(1,Math.min(n,total));
-  document.getElementById('page-display').textContent = currentPage;
-  document.querySelectorAll('.page-num').forEach(function(el,i){ el.classList.toggle('active',i+1===currentPage); });
-  renderEntries();
+function loadPage(n){
+  currentPage = Math.max(1, Math.min(n, totalPages||99));
+  API.getGuestbook(currentPage,4).then(renderEntries).catch(function(){
+    document.getElementById('entries-container').innerHTML='<div style="font-family:\'VT323\',monospace;font-size:16px;color:var(--red);padding:10px">BACKEND OFFLINE.</div>';
+  });
 }
-function prevPage(){ setPage(currentPage-1); }
-function nextPage(){ setPage(currentPage+1); }
+function setPage(n){ loadPage(n); }
+function prevPage(){ loadPage(currentPage-1); }
+function nextPage(){ loadPage(currentPage+1); }
 
 function signGuestbook(){
   var name = document.getElementById('gb-name').value.trim();
-  var loc = document.getElementById('gb-location').value.trim();
-  var msg = document.getElementById('gb-msg').value.trim();
-  if(!name||!msg){ document.getElementById('sign-result').textContent='>>> PLEASE FILL IN YOUR NAME AND MESSAGE.'; document.getElementById('sign-result').style.color='var(--red)'; return; }
-  var entry = {
-    name: name,
-    location: loc || 'Unknown Location',
-    msg: msg,
-    stars: starRating || 5,
-    date: new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'}),
-    avatar: ''
-  };
-  userEntries.unshift(entry);
-  document.getElementById('gb-name').value='';
-  document.getElementById('gb-location').value='';
-  document.getElementById('gb-msg').value='';
-  setStars(0);
-  document.getElementById('sign-result').style.color='var(--green)';
-  document.getElementById('sign-result').textContent='>>> ENTRY SAVED! +50 XP AWARDED! THE PROPHECY ADVANCES!';
-  setPage(1);
-  setTimeout(function(){ document.getElementById('sign-result').textContent=''; }, 4000);
+  var loc  = document.getElementById('gb-location').value.trim();
+  var msg  = document.getElementById('gb-msg').value.trim();
+  var res  = document.getElementById('sign-result');
+  if(!name||!msg){ res.style.color='var(--red)'; res.textContent='>>> PLEASE FILL IN YOUR NAME AND MESSAGE.'; return; }
+  res.style.color='var(--yellow)'; res.textContent='>>> TRANSMITTING TO COUNCIL DATABASE...';
+  API.postGuestbook({name:name,location:loc,message:msg,stars:starRating||5})
+    .then(function(d){
+      document.getElementById('gb-name').value='';
+      document.getElementById('gb-location').value='';
+      document.getElementById('gb-msg').value='';
+      setStars(0);
+      res.style.color='var(--green)';
+      res.textContent='>>> ENTRY SAVED! +'+(d.xp_awarded||50)+' XP AWARDED! THE PROPHECY ADVANCES!';
+      loadPage(1);
+      setTimeout(function(){ res.textContent=''; },4000);
+    }).catch(function(){ res.style.color='var(--red)'; res.textContent='>>> TRANSMISSION FAILED. BACKEND MAY BE OFFLINE.'; });
 }
+loadPage(1);
 
-renderEntries();
+
 </script>
 </body>
 </html>
