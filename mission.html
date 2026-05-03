@@ -180,25 +180,59 @@
   <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
 </div>
 
+<script src="api.js"></script>
 <script>
-var xpValues = {150:false, 200:false, 175:false, 300:false, 250:false, 100:false, 50:false};
-var totalXP = 0;
+// ── Load missions from backend on page load ───────────────────────────────
+function refreshMissions(data) {
+  var totalXP = data.total_xp || 0;
+  var done = 0;
+  data.missions.forEach(function(m, i) {
+    var el = document.querySelectorAll('.checklist-item')[i];
+    if (!el) return;
+    if (m.completed) { el.classList.add('checked'); done++; }
+    else             { el.classList.remove('checked'); }
+  });
+  var total = data.missions.length;
+  document.getElementById('total-xp').textContent   = totalXP;
+  document.getElementById('done-count').textContent  = done;
+  document.getElementById('rem-count').textContent   = total - done;
+  document.getElementById('rate').textContent        = Math.round(done/total*100) + '%';
+  document.getElementById('mission-prog').style.width = (done/total*100) + '%';
 
-function toggle(el, xpStr){
-  el.classList.toggle('checked');
-  var xp = parseInt(xpStr);
-  if(el.classList.contains('checked')) totalXP += xp;
-  else totalXP -= xp;
-  document.getElementById('total-xp').textContent = totalXP;
-  var items = document.querySelectorAll('.checklist-item');
-  var done = document.querySelectorAll('.checklist-item.checked').length;
-  document.getElementById('done-count').textContent = done;
-  document.getElementById('rem-count').textContent = items.length - done;
-  document.getElementById('rate').textContent = Math.round(done/items.length*100) + '%';
-  document.getElementById('mission-prog').style.width = (done/items.length*100)+'%';
+  // Sync score to backend
+  API.updateScore(totalXP, 0).catch(function(){});
 }
 
-var m=9,s=47;
+API.getMissions().then(refreshMissions).catch(function(){
+  console.warn('Backend offline — missions run in local mode');
+});
+
+// Toggle via backend
+function toggle(el, xpStr) {
+  var items = Array.from(document.querySelectorAll('.checklist-item'));
+  var idx   = items.indexOf(el);
+  API.toggleMission(idx).then(function(){
+    return API.getMissions();
+  }).then(refreshMissions).catch(function() {
+    // Fallback: local toggle
+    el.classList.toggle('checked');
+    var totalXP = 0;
+    document.querySelectorAll('.checklist-item.checked').forEach(function(item) {
+      var xpEl = item.querySelector('.xp-gained');
+      if(xpEl) totalXP += parseInt(xpEl.textContent);
+    });
+    var done  = document.querySelectorAll('.checklist-item.checked').length;
+    var total = items.length;
+    document.getElementById('total-xp').textContent   = totalXP;
+    document.getElementById('done-count').textContent  = done;
+    document.getElementById('rem-count').textContent   = total - done;
+    document.getElementById('rate').textContent        = Math.round(done/total*100) + '%';
+    document.getElementById('mission-prog').style.width = (done/total*100) + '%';
+  });
+}
+
+// Countdown timer
+var m=9, s=47;
 setInterval(function(){
   s--; if(s<0){s=59;m--;}
   if(m<0){m=9;s=59;}
