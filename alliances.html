@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>ALLIANCES :: Chosen.net</title>
 <link rel="stylesheet" href="style.css">
+<script src="sounds.js"></script>
+<script src="hero-setup.js"></script>
 <style>
 .ally-card{border:2px solid #004488;background:#000011;padding:10px;margin-bottom:8px}
 .ally-name{font-family:'VT323',monospace;font-size:22px;color:#4488ff;letter-spacing:2px}
@@ -155,6 +157,7 @@
         <div class="chat-msg"><span class="who">Council:</span> <span style="color:#ffff88">THE CHOSEN HAS ARRIVED</span> <span class="time">[20 min ago]</span></div>
         <div class="chat-msg"><span class="who">Wizard_42:</span> <span style="color:#aaaaff">about time lol</span> <span class="time">[20 min ago]</span></div>
       </div>
+      <div id="typing-indicator" style="font-family:'VT323',monospace;font-size:14px;color:#446644;min-height:18px;margin-bottom:3px;font-style:italic;padding:0 2px"></div>
       <input type="text" style="background:#000;color:var(--green);border:1px solid #004488;font-family:'Courier Prime',monospace;font-size:13px;padding:5px;width:100%" placeholder="Chat to alliance..." id="global-input" onkeydown="if(event.key==='Enter')globalChat()">
       <button onclick="globalChat()" class="btn btn-blue" style="width:100%;font-size:12px;margin-top:4px">[ SEND TO ALL ]</button>
     </div>
@@ -186,91 +189,148 @@ function toggleMsg(btn){
 var allyReplies = {
   wizard: ["Close to cracking that ZIP password! Stay ready.", "The HTML scrolls speak of you, Chosen One.", "MALKOR is weakening. My level 99 detection confirms it."],
   dragon: ["BACKUP NEEDED! Asia sector falling fast!!", "My dragon Compaq is injured but fighting on.", "The Chosen One speaks! Dragon roars in your honor."],
-  hero: ["shhh. in 5t34lth m0d3.", "h4x0r mode activ4ted. MALKOR won't see me.", "c4n't t4lk. t00 busy b31ng aw3s0me"]
+  hero:   ["shhh. in 5t34lth m0d3.", "h4x0r mode activ4ted. MALKOR won't see me.", "c4n't t4lk. t00 busy b31ng aw3s0me"]
 };
 
-// ── Private ally DM (still local + simulated reply posted to backend) ─────
-function sendMsg(who, nameStr, input){
+var allyNames = { wizard: 'Wizard_42', dragon: 'DragonKid', hero: 'xXHero99Xx' };
+
+// ── Typing indicator helpers ──────────────────────────────────────────────
+var typingTimers = {};
+
+function showTyping(chat, senderName) {
+  // For DM chats (private)
+  var ind = document.createElement('div');
+  ind.className = 'typing-ind-dm';
+  ind.style.cssText = 'font-family:VT323,monospace;font-size:13px;color:#446644;font-style:italic;padding:2px 0;animation:blink 1s step-end infinite';
+  ind.textContent = senderName + ' is typing...';
+  chat.appendChild(ind);
+  chat.scrollTop = chat.scrollHeight;
+  return ind;
+}
+
+function showGlobalTyping(senderName) {
+  var el = document.getElementById('typing-indicator');
+  if (!el) return;
+  el.textContent = senderName + ' is typing...';
+  if (window.SFX) SFX.chatPing();
+}
+
+function hideGlobalTyping() {
+  var el = document.getElementById('typing-indicator');
+  if (el) el.textContent = '';
+}
+
+// ── Private ally DM ───────────────────────────────────────────────────────
+function sendMsg(who, nameStr, input) {
   var text = input.value.trim();
-  if(!text) return;
+  if (!text) return;
   var chat = document.getElementById('chat-'+who);
   var d = document.createElement('div');
-  d.style.cssText='font-family:VT323,monospace;font-size:14px;padding:2px 0;color:#00cc00';
+  d.style.cssText = 'font-family:VT323,monospace;font-size:14px;padding:2px 0;color:#00cc00';
   d.textContent = 'YOU: ' + text;
   chat.appendChild(d);
   input.value = '';
+  if (window.SFX) SFX.blip();
 
-  // Post to backend as a private channel message
   API.postChat(API.getHeroName(), text, 'dm-'+who).catch(function(){});
 
-  // Ally reply comes back from backend (which auto-replies)
+  // Show typing indicator immediately
+  var typingEl = showTyping(chat, nameStr);
+  var delay    = 1200 + Math.random() * 1000;
+
   setTimeout(function(){
+    // Remove typing indicator
+    if (typingEl && typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
+
     API.getChat('dm-'+who, 0).then(function(data){
-      var msgs = data.messages;
+      var msgs  = data.messages;
       var reply = msgs.filter(function(m){ return m.sender !== 'HERO' && m.sender !== API.getHeroName(); });
       var last  = reply[reply.length-1];
-      if(last){
+      if (last) {
         var r = document.createElement('div');
-        r.style.cssText='font-family:VT323,monospace;font-size:14px;padding:2px 0;color:#4488ff';
+        r.style.cssText = 'font-family:VT323,monospace;font-size:14px;padding:2px 0;color:#4488ff';
         r.textContent = last.sender + ': ' + last.message;
         chat.appendChild(r);
         chat.scrollTop = chat.scrollHeight;
+        if (window.SFX) SFX.chatPing();
       }
     }).catch(function(){
-      // Fallback reply
       var r = document.createElement('div');
-      r.style.cssText='font-family:VT323,monospace;font-size:14px;padding:2px 0;color:#4488ff';
+      r.style.cssText = 'font-family:VT323,monospace;font-size:14px;padding:2px 0;color:#4488ff';
       var replies = allyReplies[who];
       r.textContent = nameStr + ': ' + replies[Math.floor(Math.random()*replies.length)];
       chat.appendChild(r);
       chat.scrollTop = chat.scrollHeight;
+      if (window.SFX) SFX.chatPing();
     });
-  }, 1200 + Math.random()*800);
+  }, delay);
 }
 
-// ── Global alliance chat (real backend) ───────────────────────────────────
+// ── Global alliance chat ───────────────────────────────────────────────────
 var lastChatId = 0;
+var globalTypingTimer = null;
 
-function renderGlobalMsg(m){
-  var chat  = document.getElementById('global-chat');
-  var isMe  = (m.sender === 'YOU' || m.sender === API.getHeroName());
-  var div   = document.createElement('div');
+function renderGlobalMsg(m) {
+  var chat = document.getElementById('global-chat');
+  var isMe = (m.sender === 'YOU' || m.sender === API.getHeroName());
+  var div  = document.createElement('div');
   div.className = 'chat-msg';
-  var time  = m.created_at ? m.created_at.slice(11,16) : 'now';
+  var time = m.created_at ? m.created_at.slice(11,16) : 'now';
   div.innerHTML =
-    '<span class="who" style="color:'+(isMe?'#00ff88':'#4488ff')+'">'+ m.sender +':</span> ' +
+    '<span class="who" style="color:'+(isMe?'#00ff88':'#4488ff')+'">'+m.sender+':</span> ' +
     '<span style="color:'+(isMe?'#aaffaa':'#aaaaff')+'">'+m.message+'</span> ' +
     '<span class="time">['+time+']</span>';
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
-  if(m.id > lastChatId) lastChatId = m.id;
+  if (m.id > lastChatId) lastChatId = m.id;
+  // Hide typing indicator when a real message arrives
+  if (!isMe) { hideGlobalTyping(); if (window.SFX) SFX.chatPing(); }
 }
 
-function pollGlobalChat(){
+function pollGlobalChat() {
   API.getChat('global', lastChatId).then(function(data){
     data.messages.forEach(renderGlobalMsg);
   }).catch(function(){});
 }
 
-function globalChat(){
+function globalChat() {
   var input = document.getElementById('global-input');
   var text  = input.value.trim();
-  if(!text) return;
+  if (!text) return;
   input.value = '';
-  // Render own message immediately
+  if (window.SFX) SFX.blip();
+
   renderGlobalMsg({ sender: 'YOU', message: text, created_at: new Date().toISOString(), id: 0 });
-  // Post to backend; response includes auto ally reply
-  API.postChat(API.getHeroName(), text, 'global')
-    .then(function(data){ data.messages.forEach(renderGlobalMsg); })
-    .catch(function(){});
+
+  // Pick a random ally to show typing for
+  var allies  = ['Wizard_42', 'DragonKid', 'xXHero99Xx'];
+  var typer   = allies[Math.floor(Math.random() * allies.length)];
+  var typDelay = 600 + Math.random() * 800;
+
+  setTimeout(function(){
+    showGlobalTyping(typer);
+    // Post to backend — ally auto-reply will arrive via poll
+    API.postChat(API.getHeroName(), text, 'global')
+      .then(function(data){
+        // Clear typing then render replies
+        setTimeout(function(){
+          hideGlobalTyping();
+          data.messages.forEach(renderGlobalMsg);
+        }, 800 + Math.random() * 600);
+      })
+      .catch(function(){ hideGlobalTyping(); });
+    // Safety: clear typing after 4s max
+    clearTimeout(globalTypingTimer);
+    globalTypingTimer = setTimeout(hideGlobalTyping, 4000);
+  }, typDelay);
 }
 
-// Poll for new messages every 4 seconds
 pollGlobalChat();
 setInterval(pollGlobalChat, 4000);
 
 // ── Flare ─────────────────────────────────────────────────────────────────
 function sendFlare(){
+  if (window.SFX) SFX.alert();
   API.postEvent('ALL', 'DISTRESS FLARE from ' + API.getHeroName() + '. BACKUP REQUESTED.').catch(function(){});
   document.getElementById('flare-msg').textContent = '>>> FLARE SENT! 3 ALLIES NOTIFIED. BACKUP ETA: 5 MINUTES.';
   setTimeout(function(){ document.getElementById('flare-msg').textContent=''; }, 4000);
