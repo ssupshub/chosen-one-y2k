@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>YOUR MISSION :: Chosen.net</title>
 <link rel="stylesheet" href="style.css">
+<script src="sounds.js"></script>
+<script src="hero-setup.js"></script>
 <style>
 .mission-card{border:2px solid #0044ff;background:#000011;padding:10px;margin-bottom:8px;position:relative}
 .mission-card .num{font-family:'Press Start 2P',monospace;font-size:20px;color:#0055ff;position:absolute;top:8px;right:10px;opacity:0.3}
@@ -209,12 +211,20 @@ API.getMissions().then(refreshMissions).catch(function(){
 
 // Toggle via backend
 function toggle(el, xpStr) {
-  var items = Array.from(document.querySelectorAll('.checklist-item'));
-  var idx   = items.indexOf(el);
+  var items      = Array.from(document.querySelectorAll('.checklist-item'));
+  var idx        = items.indexOf(el);
+  var wasChecked = el.classList.contains('checked');
+
+  if (!wasChecked) { if (window.SFX) SFX.missionComplete(); }
+  else             { if (window.SFX) SFX.bloop(); }
+
   API.toggleMission(idx).then(function(){
     return API.getMissions();
-  }).then(refreshMissions).catch(function() {
-    // Fallback: local toggle
+  }).then(function(data) {
+    refreshMissions(data);
+    var allDone = data.missions.every(function(m){ return m.completed; });
+    if (allDone && window.SFX) setTimeout(function(){ SFX.missionComplete(); }, 400);
+  }).catch(function() {
     el.classList.toggle('checked');
     var totalXP = 0;
     document.querySelectorAll('.checklist-item.checked').forEach(function(item) {
