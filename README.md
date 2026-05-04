@@ -1,7 +1,7 @@
 # chosen-one-y2k
 
 A retro early-2000s multi-page hero website with a Python/Flask backend and SQLite database.
-No frameworks on the frontend. No external services. Open a terminal and go.
+Deployable to Vercel with both frontend and backend running together.
 
 ---
 
@@ -12,40 +12,69 @@ chosen-one-y2k/
 |
 |-- frontend/
 |   |-- pages/
-|   |   |-- index.html          Home page - visitor counter, world status, mission intro
-|   |   |-- mission.html        Interactive mission checklist with persistent XP tracking
-|   |   |-- prophecy.html       Prophecy scrolls with a working oracle
-|   |   |-- enemies.html        Enemy database with battle system and live leaderboard
-|   |   |-- weapons.html        Armory with equippable loadout slots
-|   |   |-- alliances.html      Ally roster with real-time chat and typing indicators
-|   |   |-- world.html          ASCII world map with clickable regions and live events
-|   |   |-- guestbook.html      Paginated guestbook backed by the database
-|   |   `-- contact.html        Contact form saved to the database
+|   |   |-- index.html          Home page
+|   |   |-- mission.html        Mission checklist with XP tracking
+|   |   |-- prophecy.html       Prophecy scrolls and oracle
+|   |   |-- enemies.html        Enemy database with battle system
+|   |   |-- weapons.html        Armory with loadout builder
+|   |   |-- alliances.html      Ally roster with real-time chat
+|   |   |-- world.html          ASCII world map with live events
+|   |   |-- guestbook.html      Paginated guestbook
+|   |   `-- contact.html        Contact form
 |   |
 |   `-- assets/
 |       |-- css/
-|       |   `-- style.css       Shared stylesheet for all pages
+|       |   `-- style.css       Shared stylesheet
 |       `-- js/
-|           |-- api.js          Frontend API client used by all pages
-|           |-- sounds.js       Web Audio sound engine - no audio files required
-|           `-- hero-setup.js   Hero name setup screen and light/dark mode toggle
+|           |-- api.js          API client - auto-detects localhost vs Vercel
+|           |-- sounds.js       Web Audio sound engine
+|           `-- hero-setup.js   Hero name setup and light/dark mode toggle
+|
+|-- api/
+|   `-- index.py                Vercel serverless Flask function (all API routes)
 |
 |-- backend/
-|   |-- app.py                  Flask application, all API routes
-|   |-- requirements.txt        Python dependencies
-|   `-- chosen.db               SQLite database (auto-created on first run)
+|   |-- app.py                  Local dev Flask server
+|   `-- requirements.txt        Local dev Python dependencies
 |
-|-- start.bat                   Windows one-click launcher
-|-- start.sh                    Mac/Linux one-click launcher
+|-- vercel.json                 Vercel routing and build config
+|-- requirements.txt            Vercel Python dependencies (root level)
+|-- start.bat                   Windows local dev launcher
+|-- start.sh                    Mac/Linux local dev launcher
 |-- .gitignore
 `-- README.md
 ```
 
 ---
 
-## How to Run
+## Deploy to Vercel
 
-### Step 1 - Start the backend
+### Step 1 - Push to GitHub
+
+Make sure your repo is pushed to GitHub.
+
+### Step 2 - Import on Vercel
+
+1. Go to vercel.com and sign in
+2. Click New Project
+3. Import your chosen-one-y2k GitHub repository
+4. Leave all settings as default - vercel.json handles everything
+5. Click Deploy
+
+Vercel will:
+- Serve frontend/pages/ as static files at clean URLs (/, /mission, /guestbook etc.)
+- Run api/index.py as a Python serverless function at /api/*
+- Install flask and flask-cors from requirements.txt automatically
+
+### Step 3 - Done
+
+Your site is live. The frontend auto-detects Vercel and calls /api/* instead of localhost:5000.
+
+---
+
+## Run Locally
+
+### Start the backend
 
 On Windows:
 
@@ -61,96 +90,76 @@ Or manually:
     pip install -r requirements.txt
     python app.py
 
-The backend runs at http://localhost:5000
+Backend runs at http://localhost:5000
 
-### Step 2 - Open the frontend
+### Open the frontend
 
-Open frontend/pages/index.html in any browser.
-All pages connect to localhost:5000 automatically.
-
-The site works without the backend too. Every page falls back to local behaviour
-if the API is unreachable, so you can browse offline at any time.
+Open frontend/pages/index.html in your browser.
+api.js detects localhost and routes calls to http://localhost:5000/api automatically.
 
 ---
 
-## Features
+## How the API URL works
 
-### Frontend
-- 9 fully linked pages with shared navigation
-- Animated CRT scanline overlay and screen flicker effect
-- Light/dark mode toggle on every page (CRT green vs early-web beige)
-- Hero name setup screen on first visit, persisted in localStorage
-- Hero name displayed in the navbar, click to rename at any time
-- SFX on/off toggle in the navbar
+api.js contains this logic:
 
-### Sound effects (Web Audio API, zero audio files)
-- Dial-up modem handshake on every page load
-- Retro blip on every button and nav click
-- Victory jingle when a mission is completed
-- Crash sound when an enemy is defeated
-- Equip chime when a weapon is added to loadout
-- Submit tone on guestbook and contact form success
-- Chat ping when ally messages arrive
-- Typing indicator with sound before ally replies appear
+    const isLocal = hostname is localhost or 127.0.0.1 or file://
+    const BASE = isLocal ? "http://localhost:5000/api" : "/api"
 
-### Backend (Flask + SQLite)
-- Visitor counter with real persistent count
-- Guestbook entries saved to database with pagination
-- Contact form messages saved to database
-- Global alliance chat stored and polled every 4 seconds
-- Mission progress saved per session ID
-- Score and kill tracking synced to leaderboard
-- World events live feed updated by battles and deployments
+On Vercel, BASE becomes /api which hits the serverless function.
+On localhost, BASE becomes http://localhost:5000/api which hits the local Flask server.
+No environment variables or config changes needed.
 
 ---
 
 ## API Endpoints
 
-    GET  /api/health                     Backend health check
-    GET  /api/visitors                   Get visitor count
-    POST /api/visitors/increment         Increment and return count
+    GET  /api/health                     Health check
+    GET  /api/visitors                   Visitor count
+    POST /api/visitors/increment         Increment visitor count
 
-    GET  /api/guestbook                  List entries (page, per_page params)
-    POST /api/guestbook                  Submit a new entry
+    GET  /api/guestbook                  List entries (page, per_page)
+    POST /api/guestbook                  Submit entry
 
-    POST /api/contact                    Save a contact message
-    GET  /api/contact                    List all contact messages
+    POST /api/contact                    Save contact message
+    GET  /api/contact                    List contact messages
 
-    GET  /api/chat                       Get messages (channel, since_id params)
-    POST /api/chat                       Post a message, triggers auto ally reply
+    GET  /api/chat                       Get messages (channel, since_id)
+    POST /api/chat                       Post message, triggers ally reply
 
-    GET  /api/missions/<session_id>      Get mission state for a session
-    POST /api/missions/<session_id>/<n>  Toggle mission n complete/incomplete
+    GET  /api/missions/<session_id>      Get mission state
+    POST /api/missions/<session_id>/<n>  Toggle mission complete
 
     GET  /api/scores                     Top 20 leaderboard
-    GET  /api/scores/<session_id>        Score for one session
-    POST /api/scores/<session_id>        Create or update score
+    POST /api/scores/<session_id>        Update score
 
-    GET  /api/events                     Recent world events (limit param)
-    POST /api/events                     Post a new world event
+    GET  /api/events                     Recent world events
+    POST /api/events                     Post world event
 
-    GET  /api/session/new                Generate a fresh session ID
+    GET  /api/session/new                Generate session ID
 
 ---
 
 ## Stack
 
-    Frontend   Vanilla HTML, CSS, JavaScript. No build step.
-    Backend    Python 3, Flask, flask-cors
-    Database   SQLite via the Python standard library (sqlite3)
-    Audio      Web Audio API - all sounds generated procedurally
+    Frontend    Vanilla HTML, CSS, JavaScript. No build step.
+    Backend     Python 3, Flask, flask-cors
+    Database    SQLite - /tmp/chosen.db on Vercel, backend/chosen.db locally
+    Audio       Web Audio API - procedurally generated, no audio files
+    Hosting     Vercel (frontend static + Python serverless)
 
 ---
 
-## Notes
+## Note on Vercel SQLite
 
-- The SQLite database is created at backend/chosen.db on first run.
-- Session IDs are stored in localStorage so missions and scores persist across reloads.
-- Hero name and theme preference are stored in localStorage.
-- Chat channels: global (alliance page), dm-wizard, dm-dragon, dm-hero (private messages).
-- All data resets if you delete backend/chosen.db.
-- The backend seeds the guestbook and chat with starter entries on first run.
-- SFX requires a browser supporting the Web Audio API (all modern browsers).
+Vercel serverless functions write to /tmp which is ephemeral - it resets between
+cold starts. This means data (guestbook, chat, scores) does not persist permanently
+on Vercel. For a demo or portfolio project this is fine.
+
+For persistent data on Vercel, replace SQLite with a hosted database:
+- Supabase (Postgres, free tier)
+- PlanetScale (MySQL, free tier)
+- Vercel KV (Redis, free tier)
 
 ---
 
