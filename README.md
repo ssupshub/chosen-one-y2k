@@ -5,43 +5,51 @@ No frameworks on the frontend. No external services. Open a terminal and go.
 
 ---
 
-## File Structure
+## Project Structure
 
 ```
 chosen-one-y2k/
 |
-|-- index.html          Home page - visitor counter, world status, mission intro
-|-- mission.html        Interactive mission checklist with persistent XP tracking
-|-- prophecy.html       Prophecy scrolls with a working oracle
-|-- enemies.html        Enemy database with battle system and live leaderboard
-|-- weapons.html        Armory with equippable loadout slots
-|-- alliances.html      Ally roster with real-time chat and typing indicators
-|-- world.html          ASCII world map with clickable regions and live events
-|-- guestbook.html      Paginated guestbook backed by the database
-|-- contact.html        Contact form saved to the database
-|-- style.css           Shared stylesheet for all pages
-|-- api.js              Frontend API client used by all pages
-|-- sounds.js           Web Audio sound engine - no audio files required
-|-- hero-setup.js       Hero name setup screen and light/dark mode toggle
-|-- start.bat           Windows one-click launcher
-|-- start.sh            Mac/Linux one-click launcher
-|-- README.md           This file
+|-- frontend/
+|   |-- pages/
+|   |   |-- index.html          Home page - visitor counter, world status, mission intro
+|   |   |-- mission.html        Interactive mission checklist with persistent XP tracking
+|   |   |-- prophecy.html       Prophecy scrolls with a working oracle
+|   |   |-- enemies.html        Enemy database with battle system and live leaderboard
+|   |   |-- weapons.html        Armory with equippable loadout slots
+|   |   |-- alliances.html      Ally roster with real-time chat and typing indicators
+|   |   |-- world.html          ASCII world map with clickable regions and live events
+|   |   |-- guestbook.html      Paginated guestbook backed by the database
+|   |   `-- contact.html        Contact form saved to the database
+|   |
+|   `-- assets/
+|       |-- css/
+|       |   `-- style.css       Shared stylesheet for all pages
+|       `-- js/
+|           |-- api.js          Frontend API client used by all pages
+|           |-- sounds.js       Web Audio sound engine - no audio files required
+|           `-- hero-setup.js   Hero name setup screen and light/dark mode toggle
 |
 |-- backend/
-    |-- app.py          Flask application, all API routes
-    |-- requirements.txt
-    |-- chosen.db       SQLite database (auto-created on first run)
+|   |-- app.py                  Flask application, all API routes
+|   |-- requirements.txt        Python dependencies
+|   `-- chosen.db               SQLite database (auto-created on first run)
+|
+|-- start.bat                   Windows one-click launcher
+|-- start.sh                    Mac/Linux one-click launcher
+|-- .gitignore
+`-- README.md
 ```
 
 ---
 
 ## How to Run
 
-Step 1 - Start the backend
+### Step 1 - Start the backend
 
 On Windows:
 
-    Double-click start.bat
+    double-click start.bat
 
 On Mac or Linux:
 
@@ -55,43 +63,44 @@ Or manually:
 
 The backend runs at http://localhost:5000
 
-Step 2 - Open the frontend
+### Step 2 - Open the frontend
 
-Open index.html in any browser. All pages connect to localhost:5000 automatically.
+Open frontend/pages/index.html in any browser.
+All pages connect to localhost:5000 automatically.
 
 The site works without the backend too. Every page falls back to local behaviour
-if the API is unreachable, so you can browse the HTML files offline at any time.
+if the API is unreachable, so you can browse offline at any time.
 
 ---
 
 ## Features
 
-Frontend
+### Frontend
 - 9 fully linked pages with shared navigation
-- Animated CRT scanline overlay and screen flicker
-- Light/dark mode toggle (CRT green vs early-web beige) on every page
+- Animated CRT scanline overlay and screen flicker effect
+- Light/dark mode toggle on every page (CRT green vs early-web beige)
 - Hero name setup screen on first visit, persisted in localStorage
-- Hero name shown in the navbar on every page, click to rename
-- SFX on/off toggle button in the navbar
+- Hero name displayed in the navbar, click to rename at any time
+- SFX on/off toggle in the navbar
 
-Sound effects (Web Audio API, no files needed)
-- Dial-up modem handshake plays on every page load
+### Sound effects (Web Audio API, zero audio files)
+- Dial-up modem handshake on every page load
 - Retro blip on every button and nav click
 - Victory jingle when a mission is completed
 - Crash sound when an enemy is defeated
-- Equip chime when a weapon is added to your loadout
-- Submit tone when the guestbook or contact form is sent
-- Chat ping when an ally message arrives
+- Equip chime when a weapon is added to loadout
+- Submit tone on guestbook and contact form success
+- Chat ping when ally messages arrive
 - Typing indicator with sound before ally replies appear
 
-Backend (Flask + SQLite)
-- Visitor counter - real persistent count
-- Guestbook - entries saved to database, paginated
-- Contact form - messages saved to database
-- Global alliance chat - stored and polled every 4 seconds
-- Mission progress - saved per session ID in localStorage
-- Score and kill tracking - synced to leaderboard
-- World events - live feed updated by battles and deployments
+### Backend (Flask + SQLite)
+- Visitor counter with real persistent count
+- Guestbook entries saved to database with pagination
+- Contact form messages saved to database
+- Global alliance chat stored and polled every 4 seconds
+- Mission progress saved per session ID
+- Score and kill tracking synced to leaderboard
+- World events live feed updated by battles and deployments
 
 ---
 
@@ -135,13 +144,13 @@ Backend (Flask + SQLite)
 
 ## Notes
 
-- The SQLite database is created automatically at backend/chosen.db on first run.
+- The SQLite database is created at backend/chosen.db on first run.
 - Session IDs are stored in localStorage so missions and scores persist across reloads.
-- Hero name and theme preference are also stored in localStorage.
+- Hero name and theme preference are stored in localStorage.
 - Chat channels: global (alliance page), dm-wizard, dm-dragon, dm-hero (private messages).
-- All data resets if you delete chosen.db.
+- All data resets if you delete backend/chosen.db.
 - The backend seeds the guestbook and chat with starter entries on first run.
-- SFX requires a browser that supports the Web Audio API (all modern browsers do).
+- SFX requires a browser supporting the Web Audio API (all modern browsers).
 
 ---
 
