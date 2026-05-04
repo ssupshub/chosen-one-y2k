@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/",
+      "dest": "frontend/pages/index.html"
+    },
+    {
+      "src": "/mission",
+      "dest": "frontend/pages/mission.html"
+    },
+    {
+      "src": "/prophecy",
+      "dest": "frontend/pages/prophecy.html"
+    },
+    {
+      "src": "/enemies",
+      "dest": "frontend/pages/enemies.html"
+    },
+    {
+      "src": "/weapons",
+      "dest": "frontend/pages/weapons.html"
+    },
+    {
+      "src": "/alliances",
+      "dest": "frontend/pages/alliances.html"
+    },
+    {
+      "src": "/world",
+      "dest": "frontend/pages/world.html"
+    },
+    {
+      "src": "/guestbook",
+      "dest": "frontend/pages/guestbook.html"
+    },
+    {
+      "src": "/contact",
+      "dest": "frontend/pages/contact.html"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "frontend/assets/$1"
+    },
+    {
+      "src": "/(.*\\.html)",
+      "dest": "frontend/pages/$1"
+    }
+  ]
+}
