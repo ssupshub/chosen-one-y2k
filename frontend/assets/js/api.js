@@ -1,11 +1,19 @@
 /**
  * api.js — Frontend API client for chosen-one-y2k
- * All pages import this via <script src="api.js"></script>
- * Base URL auto-detects localhost vs production.
+ * All pages import this via <script src="../../assets/js/api.js"></script>
+ *
+ * BASE URL logic:
+ *   - localhost / 127.0.0.1  → http://localhost:5000/api  (local Flask dev server)
+ *   - Vercel / any other host → /api                       (Vercel serverless function)
  */
 
 const API = (() => {
-  const BASE = "http://localhost:5000/api";
+  const isLocal = (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.protocol === "file:"
+  );
+  const BASE = isLocal ? "http://localhost:5000/api" : "/api";
 
   async function req(method, path, body) {
     const opts = {
