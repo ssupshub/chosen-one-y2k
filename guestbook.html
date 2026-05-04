@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>GUESTBOOK :: Chosen.net</title>
 <link rel="stylesheet" href="style.css">
+<script src="sounds.js"></script>
+<script src="hero-setup.js"></script>
 <style>
 .entry{border:2px solid #004400;background:#000a00;padding:10px;margin-bottom:8px;animation:fadein 0.5s ease both}
 .entry-header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-bottom:6px}
@@ -179,6 +181,7 @@ function signGuestbook(){
       document.getElementById('gb-location').value='';
       document.getElementById('gb-msg').value='';
       setStars(0);
+      if (window.SFX) SFX.formSubmit();
       res.style.color='var(--green)';
       res.textContent='>>> ENTRY SAVED! +'+(d.xp_awarded||50)+' XP AWARDED! THE PROPHECY ADVANCES!';
       loadPage(1);
