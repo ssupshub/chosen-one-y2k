@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>CONTACT :: Chosen.net</title>
 <link rel="stylesheet" href="style.css">
+<script src="sounds.js"></script>
+<script src="hero-setup.js"></script>
 <style>
 .form-section{border:2px solid var(--dark-green);background:var(--panel);padding:14px;margin-bottom:8px}
 .contact-method{border:2px solid #004400;background:#000a00;padding:10px;margin-bottom:8px}
@@ -142,6 +144,7 @@ function sendContact(){
     message:   msg,
     encrypted: encrypted
   }).then(function(){
+    if (window.SFX) SFX.formSubmit();
     document.querySelector('.form-section').style.display = 'none';
     document.getElementById('success-box').style.display  = 'block';
   }).catch(function(){
