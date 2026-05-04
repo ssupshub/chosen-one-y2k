@@ -1,5 +1,16 @@
+# SQLite database (local dev only)
 backend/chosen.db
+*.db
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+.env
+
+# Vercel
+.vercel
+
+# OS
 .DS_Store
 Thumbs.db
