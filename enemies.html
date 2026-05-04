@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>ENEMY FILES :: Chosen.net</title>
 <link rel="stylesheet" href="style.css">
+<script src="sounds.js"></script>
+<script src="hero-setup.js"></script>
 <style>
 .enemy-card{border:2px solid var(--red);background:#0d0000;padding:12px;margin-bottom:10px;position:relative;animation:fadein 0.5s ease both}
 .enemy-name{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--red);letter-spacing:1px;margin-bottom:6px}
@@ -232,6 +234,7 @@ function defeat(btn, name){
   document.getElementById('battle-log').innerHTML = battleLog.join('<br>');
 
   // Post world event
+  if (window.SFX) SFX.enemyDefeat();
   API.postEvent('BATTLEFIELD', name + ' defeated by ' + API.getHeroName()).catch(function(){});
 
   // Sync score to backend
