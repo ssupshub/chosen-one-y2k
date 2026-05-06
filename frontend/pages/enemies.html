@@ -19,11 +19,149 @@
 .threat-high{color:var(--orange);border-color:#883300;background:#110500}
 .threat-critical{color:var(--red);border-color:#880000;background:#110000;animation:blink 1s step-end infinite}
 .search-bar{background:#000;color:var(--green);border:1px solid var(--dark-green);font-family:'Courier Prime',monospace;font-size:15px;padding:6px 10px;width:100%;margin-bottom:10px}
+/* BATTLE OVERLAY */
+#battle-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:99999;display:none;flex-direction:column;font-family:'Courier Prime',monospace;overflow:hidden}
+#battle-overlay.active{display:flex}
+#battle-header{background:#0a0000;border-bottom:2px solid var(--red);padding:6px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#battle-header .b-title{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--red);letter-spacing:2px}
+#battle-header .b-round{font-family:'VT323',monospace;font-size:20px;color:var(--yellow)}
+#battle-hpbars{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:10px 16px;background:#050000;flex-shrink:0;border-bottom:1px solid #220000}
+.b-fighter-label{font-family:'VT323',monospace;font-size:16px;letter-spacing:1px}
+.b-hp-wrap{display:flex;flex-direction:column;gap:3px}
+.b-hp-bar{height:18px;background:#1a0000;border:1px solid #550000;overflow:hidden}
+.b-hp-fill{height:100%;transition:width 0.3s ease}
+.hp-hero{background:linear-gradient(90deg,#00aa00,#00ff00)}
+.hp-enemy{background:linear-gradient(90deg,#ff2200,#ff6600)}
+.b-hp-text{font-family:'VT323',monospace;font-size:13px;color:#888;text-align:right}
+.vs-badge{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--red);text-shadow:0 0 10px var(--red);padding:0 8px}
+.b-special-wrap{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.b-special-bar{height:8px;background:#001133;border:1px solid #003366;overflow:hidden}
+.b-special-fill{height:100%;background:linear-gradient(90deg,#0044ff,#00aaff);transition:width 0.4s ease}
+#battle-arena{flex:1;display:grid;grid-template-columns:1fr 1fr;background:#000;position:relative;overflow:hidden;min-height:0}
+.b-side{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:10px;position:relative}
+.b-side.hero-side{border-right:1px solid #220000}
+.b-side::after{content:'';position:absolute;bottom:60px;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#330000,transparent)}
+.b-sprite{white-space:pre;font-family:'Courier Prime',monospace;font-size:13px;line-height:1.15;text-align:center;position:relative;transition:transform 0.1s;margin-bottom:8px}
+.b-sprite.hero-sprite{color:#00ff00}
+.b-sprite.enemy-sprite{color:#ff4400}
+@keyframes hit-flash{0%{filter:brightness(5) saturate(0)}100%{filter:none}}
+@keyframes shake-l{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(4px)}}
+@keyframes shake-r{0%,100%{transform:translateX(0)}25%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+@keyframes jump-anim{0%,100%{transform:translateY(0)}50%{transform:translateY(-28px)}}
+@keyframes dodge-anim{0%,100%{transform:translateX(0) scaleX(1)}50%{transform:translateX(18px) scaleX(0.7)}}
+@keyframes special-flash{0%{opacity:0;transform:scale(0.5)}50%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(2)}}
+@keyframes ko-fall{0%{transform:rotate(0deg) translateY(0)}100%{transform:rotate(-90deg) translateY(40px);opacity:0.3}}
+.anim-hit-l{animation:shake-l 0.3s ease}
+.anim-hit-r{animation:shake-r 0.3s ease}
+.anim-flash{animation:hit-flash 0.25s ease}
+.anim-jump{animation:jump-anim 0.4s ease}
+.anim-dodge{animation:dodge-anim 0.3s ease}
+.anim-ko{animation:ko-fall 0.8s ease forwards}
+.dmg-float{position:absolute;font-family:'Press Start 2P',monospace;font-size:13px;font-weight:bold;pointer-events:none;z-index:10;animation:dmg-rise 1.2s ease forwards}
+@keyframes dmg-rise{0%{opacity:1;transform:translateY(0) scale(1)}60%{opacity:1;transform:translateY(-50px) scale(1.3)}100%{opacity:0;transform:translateY(-80px) scale(0.8)}}
+.special-fx{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5}
+.special-text{font-family:'Press Start 2P',monospace;font-size:22px;text-shadow:0 0 20px currentColor;animation:special-flash 0.8s ease forwards}
+.b-name-tag{font-family:'VT323',monospace;font-size:16px;letter-spacing:1px;margin-top:4px}
+.status-effect{font-family:'VT323',monospace;font-size:12px;padding:1px 5px;border:1px solid;display:inline-block;margin:1px}
+.status-burn{color:#ff6600;border-color:#ff6600;background:#110300}
+.status-stun{color:#ffff00;border-color:#ffff00;background:#111100}
+.status-shield{color:#4488ff;border-color:#4488ff;background:#000a22}
+#battle-log-ticker{background:#080000;border-top:2px solid #330000;padding:6px 16px;min-height:52px;flex-shrink:0}
+.b-log-line{font-family:'VT323',monospace;font-size:17px;color:#cc4444;animation:fadein 0.3s ease;line-height:1.4}
+.b-log-line.hero-action{color:#00cc88}
+.b-log-line.enemy-action{color:#ff4444}
+.b-log-line.system{color:var(--yellow)}
+#battle-controls{background:#0a0000;border-top:2px solid var(--red);padding:8px 16px;flex-shrink:0}
+.b-controls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:5px}
+@media(min-width:500px){.b-controls-grid{grid-template-columns:repeat(6,1fr)}}
+.b-move-btn{font-family:'VT323',monospace;font-size:14px;letter-spacing:1px;background:#110000;color:var(--red);border:1px solid #550000;padding:8px 4px;cursor:pointer;text-align:center;transition:all 0.1s;user-select:none}
+.b-move-btn:hover:not(:disabled){background:#330000;color:var(--orange);border-color:var(--orange)}
+.b-move-btn:active:not(:disabled){transform:scale(0.95)}
+.b-move-btn:disabled{opacity:0.3;cursor:not-allowed}
+.b-move-btn.special-btn{color:#4488ff;border-color:#224488;background:#000a22}
+.b-move-btn.special-btn:hover:not(:disabled){background:#001133;color:#88aaff;border-color:#4488ff}
+.move-cost{font-size:10px;color:#555;display:block}
+.b-controls-hint{font-family:'VT323',monospace;font-size:13px;color:#443333;text-align:center}
+#round-announce{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:20;pointer-events:none}
+.round-text{font-family:'Press Start 2P',monospace;font-size:32px;color:var(--yellow);text-shadow:0 0 30px var(--yellow),0 0 60px var(--orange);animation:round-pop 1.6s ease forwards}
+@keyframes round-pop{0%{opacity:0;transform:scale(0.3)}30%{opacity:1;transform:scale(1.2)}60%,80%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
+#battle-result{position:absolute;inset:0;background:rgba(0,0,0,0.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:30}
+.result-title{font-family:'Press Start 2P',monospace;font-size:26px;margin-bottom:16px;letter-spacing:2px}
+.result-win{color:#00ff00;text-shadow:0 0 30px #00ff00}
+.result-lose{color:#ff2200;text-shadow:0 0 30px #ff2200}
+.result-stats{font-family:'VT323',monospace;font-size:19px;color:#aaaaaa;line-height:2;text-align:center;margin-bottom:16px}
+.result-btn{font-family:'Press Start 2P',monospace;font-size:10px;padding:10px 18px;cursor:pointer;border:none;margin:4px;letter-spacing:1px}
 </style>
 </head>
 <body>
+
+<!-- BATTLE OVERLAY -->
+<div id="battle-overlay">
+  <div id="battle-header">
+    <div class="b-title">1v1 BATTLE v2.001</div>
+    <div class="b-round" id="b-round-label">ROUND 1</div>
+    <div class="b-title" id="b-enemy-title">VS ENEMY</div>
+  </div>
+  <div id="battle-hpbars">
+    <div>
+      <div class="b-fighter-label" style="color:#00ff88" id="hero-label">HERO</div>
+      <div class="b-hp-wrap">
+        <div class="b-hp-bar"><div class="b-hp-fill hp-hero" id="hero-hp-fill" style="width:100%"></div></div>
+        <div class="b-hp-text"><span id="hero-hp-val">100</span> / <span id="hero-hp-max">100</span> HP</div>
+      </div>
+      <div class="b-special-wrap">
+        <div style="font-family:'VT323',monospace;font-size:11px;color:#224488">SPECIAL</div>
+        <div class="b-special-bar"><div class="b-special-fill" id="hero-sp-fill" style="width:0%"></div></div>
+      </div>
+      <div id="hero-statuses" style="margin-top:3px"></div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div style="text-align:right">
+      <div class="b-fighter-label" style="color:#ff4400;text-align:right" id="enemy-label">ENEMY</div>
+      <div class="b-hp-wrap">
+        <div class="b-hp-bar"><div class="b-hp-fill hp-enemy" id="enemy-hp-fill" style="width:100%"></div></div>
+        <div class="b-hp-text" style="text-align:left"><span id="enemy-hp-val">500</span> / <span id="enemy-hp-max">500</span> HP</div>
+      </div>
+      <div class="b-special-wrap">
+        <div style="font-family:'VT323',monospace;font-size:11px;color:#553311;text-align:right">RAGE</div>
+        <div class="b-special-bar"><div class="b-special-fill" id="enemy-sp-fill" style="width:0%;background:linear-gradient(90deg,#ff2200,#ff8800)"></div></div>
+      </div>
+      <div id="enemy-statuses" style="margin-top:3px;text-align:right"></div>
+    </div>
+  </div>
+  <div id="battle-arena">
+    <div id="round-announce"></div>
+    <div id="special-fx-layer" class="special-fx" style="display:none"></div>
+    <div class="b-side hero-side">
+      <div class="b-sprite hero-sprite" id="hero-sprite">  O
+ /|\
+ / \
+HERO</div>
+      <div class="b-name-tag" style="color:#00ff88" id="hero-name-tag">HERO</div>
+    </div>
+    <div class="b-side enemy-side">
+      <div class="b-sprite enemy-sprite" id="enemy-sprite">ENEMY</div>
+      <div class="b-name-tag" style="color:#ff4400" id="enemy-name-tag">ENEMY</div>
+    </div>
+    <div id="battle-result">
+      <div class="result-title" id="result-title">YOU WIN!</div>
+      <div class="result-stats" id="result-stats"></div>
+      <div>
+        <button class="result-btn" id="result-rematch" style="background:#ff2200;color:#fff">[ REMATCH ]</button>
+        <button class="result-btn" id="result-exit" style="background:#004400;color:#00ff00">[ EXIT ]</button>
+      </div>
+    </div>
+  </div>
+  <div id="battle-log-ticker"><div id="b-log-lines"></div></div>
+  <div id="battle-controls">
+    <div class="b-controls-grid" id="move-buttons"></div>
+    <div class="b-controls-hint">KEYS: 1-PUNCH 2-KICK 3-HACK 4-BLOCK 5-DODGE 6-SPECIAL | ESC=EXIT</div>
+  </div>
+</div>
+
+<!-- PAGE -->
 <div class="marquee-wrap">
-  <div class="marquee-inner">*** CLASSIFIED ENEMY DATABASE *** CLEARANCE: HERO LEVEL *** 14 ACTIVE THREATS DETECTED *** MALKOR.EXE SIGHTED IN SECTOR 7 *** DO NOT APPROACH ALONE ***</div>
+  <div class="marquee-inner">*** ENEMY DATABASE *** CLICK BATTLE TO FIGHT 1v1 *** MALKOR.EXE SIGHTED SECTOR 7 *** TURN-BASED COMBAT SYSTEM ACTIVE ***</div>
 </div>
 <nav class="navbar">
   <span class="navbar-title">[CHOSEN.NET]</span>
@@ -37,12 +175,10 @@
   <a href="/guestbook">[GUESTBOOK]</a>
   <a href="/contact">[CONTACT]</a>
 </nav>
-
 <div class="page-header">
   <h1 style="color:var(--red)">::: ENEMY FILES — CLASSIFIED :::</h1>
-  <div class="sub">DATABASE OF KNOWN THREATS // COUNCIL INTELLIGENCE DIVISION</div>
+  <div class="sub">CLICK [ BATTLE ] TO START A 1v1 FIGHT // TURN-BASED // USE YOUR MOVES WISELY</div>
 </div>
-
 <div class="three-col">
   <div style="display:flex;flex-direction:column;gap:8px">
     <div class="panel panel-red">
@@ -55,53 +191,49 @@
       </div>
     </div>
     <div class="panel panel-red">
-      <div class="panel-title" style="color:var(--red)">::: ENEMY COUNT :::</div>
-      <div style="font-family:'VT323',monospace;font-size:34px;color:var(--red);text-align:center" class="blink">14</div>
-      <div style="font-family:'VT323',monospace;font-size:13px;color:#884444;text-align:center">ACTIVE THREATS</div>
-      <div style="font-family:'VT323',monospace;font-size:14px;color:#664444;margin-top:6px;line-height:1.7">
-        CRITICAL: 1<br>
-        HIGH: 3<br>
-        MEDIUM: 5<br>
-        LOW: 5
-      </div>
-    </div>
-    <div class="panel panel-red">
-      <div class="panel-title" style="color:var(--red)">::: FILTER :::</div>
-      <input type="text" class="search-bar" id="search" placeholder="Search enemies..." oninput="filterEnemies()">
-      <div style="font-family:'VT323',monospace;font-size:14px;color:#884444">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#884444;font-family:'VT323',monospace;font-size:14px"><input type="checkbox" id="f-critical" onchange="filterEnemies()"> CRITICAL ONLY</label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#884444;font-family:'VT323',monospace;font-size:14px"><input type="checkbox" id="f-defeated" onchange="filterEnemies()"> HIDE DEFEATED</label>
-      </div>
-    </div>
-    <div class="panel panel-red">
       <div class="panel-title" style="color:var(--red)">::: YOUR KILLS :::</div>
       <div style="font-family:'VT323',monospace;font-size:30px;color:var(--green);text-align:center" id="killcount">0</div>
       <div style="font-family:'VT323',monospace;font-size:13px;color:#446644;text-align:center">ENEMIES DEFEATED</div>
     </div>
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: FILTER :::</div>
+      <input type="text" class="search-bar" id="search" placeholder="Search enemies..." oninput="filterEnemies()">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#884444;font-family:'VT323',monospace;font-size:14px"><input type="checkbox" id="f-critical" onchange="filterEnemies()"> CRITICAL ONLY</label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#884444;font-family:'VT323',monospace;font-size:14px"><input type="checkbox" id="f-defeated" onchange="filterEnemies()"> HIDE DEFEATED</label>
+    </div>
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: BATTLE MOVES :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#884444;line-height:1.9">
+        [1] PUNCH — fast, low dmg<br>
+        [2] KICK — medium damage<br>
+        [3] HACK — strong, slow<br>
+        [4] BLOCK — reduce dmg 70%<br>
+        [5] DODGE — avoid attack<br>
+        [6] SPECIAL — needs full bar<br>
+        <span style="color:#224488;font-size:13px">SPECIAL bar fills each turn</span>
+      </div>
+    </div>
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: LEADERBOARD :::</div>
+      <div id="leaderboard" style="font-family:'VT323',monospace;font-size:13px;color:#aa4444;line-height:1.8">Loading...</div>
+    </div>
   </div>
-
   <div id="enemy-list">
-    <!-- BOSS -->
     <div class="enemy-card" data-name="MALKOR" data-level="critical" data-defeated="false">
       <div class="threat-badge threat-critical">CRITICAL</div>
       <div class="enemy-ascii">  /\__/\
- (>◕ ◕<)
+ (>X  X<)
   (evil)
   |    |
   (____)</div>
       <div class="enemy-name">MALKOR.EXE — THE VIRUS LORD</div>
-      <div class="enemy-stat">HP: <span>99,999 / 99,999</span></div>
-      <div class="enemy-stat">ATTACK: <span>POPUP STORM, DATA CORRUPTION, BLUE SCREEN OF DEATH</span></div>
-      <div class="enemy-stat">DEFENSE: <span>FIREWALL CLOAK, ANTIVIRUS SHIELD</span></div>
-      <div class="enemy-stat">LOCATION: <span>UNKNOWN — MOVING BETWEEN SERVERS</span></div>
-      <div class="enemy-stat">ORIGIN: <span>SECRET FLOPPY DISK, NEW MEXICO, 1998</span></div>
-      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">The supreme evil. Escaped government containment. His goal: corrupt every byte on earth by Y3K. Approaches: Do NOT confront alone. Bring the Sacred .ZIP File.</div>
-      <div class="weakness">WEAKNESS: THE SACRED .ZIP FILE OF DESTINY (password required)</div>
-      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'MALKOR')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+      <div class="enemy-stat">HP: <span>500</span> &nbsp; ATK: <span>18-28</span> &nbsp; DEF: <span>8</span></div>
+      <div class="enemy-stat">SPECIAL: <span>VIRUS NOVA (massive AoE)</span></div>
+      <div class="enemy-stat">WEAKNESS: <span>THE SACRED .ZIP FILE</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">The supreme evil. Enters RAGE MODE below 25% HP. His special VIRUS NOVA can stun you. Bring your best moves.</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="startBattle(this,'MALKOR')" style="font-size:12px;padding:6px 18px">[ BATTLE ]</button></div>
     </div>
-
-    <!-- MINI BOSS 1 -->
-    <div class="enemy-card" data-name="POPUP" data-level="high" data-defeated="false">
+    <div class="enemy-card" data-name="POPUP_GENERAL" data-level="high" data-defeated="false">
       <div class="threat-badge threat-high">HIGH</div>
       <div class="enemy-ascii"> ___________
 |CLICK HERE!|
@@ -109,16 +241,13 @@
 |___________|
       [X]</div>
       <div class="enemy-name">POPUP_GENERAL.EXE</div>
-      <div class="enemy-stat">HP: <span>5,000 / 5,000</span></div>
-      <div class="enemy-stat">ATTACK: <span>INFINITE POPUP SPAWN, FAKE VIRUS ALERT</span></div>
-      <div class="enemy-stat">LOCATION: <span>GEOCITIES SERVERS, USA</span></div>
-      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Commands Malkor's popup army. Spawns 10 new popups for every one closed. Immune to right-click.</div>
-      <div class="weakness">WEAKNESS: AD-BLOCK CANNON (see Weapons page)</div>
-      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'POPUP_GENERAL')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+      <div class="enemy-stat">HP: <span>280</span> &nbsp; ATK: <span>12-22</span> &nbsp; DEF: <span>4</span></div>
+      <div class="enemy-stat">SPECIAL: <span>POPUP STORM (10 windows)</span></div>
+      <div class="enemy-stat">WEAKNESS: <span>AD-BLOCK CANNON</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Spawns popups every turn. Watch for FAKE ALERT — it can stun you. Use HACK to deal big damage fast.</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="startBattle(this,'POPUP_GENERAL')" style="font-size:12px;padding:6px 18px">[ BATTLE ]</button></div>
     </div>
-
-    <!-- MINI BOSS 2 -->
-    <div class="enemy-card" data-name="COOKIE" data-level="high" data-defeated="false">
+    <div class="enemy-card" data-name="COOKIE_THIEF" data-level="high" data-defeated="false">
       <div class="threat-badge threat-high">HIGH</div>
       <div class="enemy-ascii">  .------.
  ( COOKIE )
@@ -126,152 +255,406 @@
   |steals|
   '------'</div>
       <div class="enemy-name">COOKIE_THIEF.BAT</div>
-      <div class="enemy-stat">HP: <span>3,200 / 3,200</span></div>
-      <div class="enemy-stat">ATTACK: <span>IDENTITY THEFT, SESSION HIJACK, TRACKING</span></div>
-      <div class="enemy-stat">LOCATION: <span>DARK WEB, TOR NETWORK</span></div>
-      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Steals browser cookies to harvest login credentials. Has stolen info from 400,000 Hotmail accounts.</div>
-      <div class="weakness">WEAKNESS: INCOGNITO SHIELD + COOKIE CRUMBLER</div>
-      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'COOKIE_THIEF')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+      <div class="enemy-stat">HP: <span>200</span> &nbsp; ATK: <span>10-20</span> &nbsp; DEF: <span>3</span></div>
+      <div class="enemy-stat">SPECIAL: <span>FULL SESSION WIPE (stun)</span></div>
+      <div class="enemy-stat">WEAKNESS: <span>INCOGNITO SHIELD</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Fast attacker with high crit chance. PHISH HOOK can stun 2 turns. Watch your HP closely.</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="startBattle(this,'COOKIE_THIEF')" style="font-size:12px;padding:6px 18px">[ BATTLE ]</button></div>
     </div>
-
-    <!-- MEDIUM -->
-    <div class="enemy-card" data-name="DIALUP" data-level="medium" data-defeated="false">
+    <div class="enemy-card" data-name="DIALUP_DRAIN" data-level="medium" data-defeated="false">
       <div class="threat-badge threat-med">MEDIUM</div>
       <div class="enemy-ascii">~*~kshhhhh~*~
  (dial up noise)
   56k VAMPIRE</div>
       <div class="enemy-name">DIALUP_DRAIN.VBS</div>
-      <div class="enemy-stat">HP: <span>1,800 / 1,800</span></div>
-      <div class="enemy-stat">ATTACK: <span>BANDWIDTH SUCK, LINE DISCONNECT, BUSY SIGNAL</span></div>
-      <div class="enemy-stat">LOCATION: <span>PHONE LINE INFRASTRUCTURE</span></div>
-      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Throttles internet connections to 2400 baud. Has caused catastrophic slowdowns across 14 countries.</div>
-      <div class="weakness">WEAKNESS: BROADBAND BLADE (T1 LINE ATTACK)</div>
-      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'DIALUP_DRAIN')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+      <div class="enemy-stat">HP: <span>150</span> &nbsp; ATK: <span>8-16</span> &nbsp; DEF: <span>2</span></div>
+      <div class="enemy-stat">SPECIAL: <span>MODEM SCREAM (stun 2 turns)</span></div>
+      <div class="enemy-stat">WEAKNESS: <span>BROADBAND BLADE</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Slow but BUSY SIGNAL stuns frequently. Its special MODEM SCREAM stuns for 2 full turns. Finish fast.</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="startBattle(this,'DIALUP_DRAIN')" style="font-size:12px;padding:6px 18px">[ BATTLE ]</button></div>
     </div>
-
-    <!-- LOW -->
-    <div class="enemy-card" data-name="WORM" data-level="low" data-defeated="false">
+    <div class="enemy-card" data-name="CHAINMAIL_WORM" data-level="low" data-defeated="false">
       <div class="threat-badge threat-low">LOW</div>
       <div class="enemy-ascii"> o~o~o~o~o
  CHAIN MAIL
  WORM.EXE
  ~o~o~o~o~</div>
       <div class="enemy-name">CHAINMAIL_WORM.EXE</div>
-      <div class="enemy-stat">HP: <span>200 / 200</span></div>
-      <div class="enemy-stat">ATTACK: <span>FORWARD THIS TO 10 FRIENDS OR ELSE</span></div>
-      <div class="enemy-stat">LOCATION: <span>AOL MAIL SERVERS</span></div>
-      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Annoying but mostly harmless. Clogs inboxes with chain letters threatening bad luck if not forwarded.</div>
-      <div class="weakness">WEAKNESS: DELETE KEY</div>
-      <div style="margin-top:8px"><button class="btn btn-red" onclick="defeat(this,'CHAINMAIL_WORM')" style="font-size:12px;padding:4px 14px">[ BATTLE ]</button></div>
+      <div class="enemy-stat">HP: <span>60</span> &nbsp; ATK: <span>4-10</span> &nbsp; DEF: <span>0</span></div>
+      <div class="enemy-stat">SPECIAL: <span>MASS FORWARD (embarrassment dmg)</span></div>
+      <div class="enemy-stat">WEAKNESS: <span>DELETE KEY</span></div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886666;margin-top:6px">Weak but very fast. Goes first most of the time. BAD LUCK CURSE applies burn. One HACK ends it.</div>
+      <div style="margin-top:8px"><button class="btn btn-red" onclick="startBattle(this,'CHAINMAIL_WORM')" style="font-size:12px;padding:6px 18px">[ BATTLE ]</button></div>
     </div>
   </div>
-
   <div style="display:flex;flex-direction:column;gap:8px">
-    <div class="panel panel-red">
-      <div class="panel-title" style="color:var(--red)">::: BATTLE LOG :::</div>
-      <div id="battle-log" style="font-family:'VT323',monospace;font-size:13px;color:#aa4444;line-height:1.7;min-height:80px">No battles yet...<br>Engage an enemy to begin.</div>
-    </div>
-    <div class="panel panel-red">
-      <div class="panel-title" style="color:var(--red)">::: LEADERBOARD :::</div>
-      <div id="leaderboard" style="font-family:'VT323',monospace;font-size:13px;color:#aa4444;line-height:1.8">Loading...</div>
-    </div>
     <div class="panel panel-red">
       <div class="panel-title" style="color:var(--red)">::: MALKOR STATUS :::</div>
       <div style="font-family:'VT323',monospace;font-size:14px;color:#884444;line-height:1.7">
         LAST SEEN:<br><span style="color:var(--yellow)">SERVER 7-B, SECTOR 9</span><br><br>
-        CURRENT FORM:<br><span style="color:var(--red)" class="blink">VIRUS LORD (FINAL)</span><br><br>
-        WANTED BY:<br><span style="color:#aaaaaa">NSA, FBI, AOL, NORTON, MCAFEE</span><br><br>
-        BOUNTY:<br><span style="color:var(--yellow)">1,000,000 INTERNET POINTS</span>
+        FORM:<br><span style="color:var(--red)" class="blink">VIRUS LORD (FINAL)</span><br><br>
+        BOUNTY:<br><span style="color:var(--yellow)">1,000,000 INTERNET PTS</span>
       </div>
     </div>
     <div class="panel">
-      <div class="panel-title">::: TIPS :::</div>
-      <div style="font-family:'VT323',monospace;font-size:14px;color:#888;line-height:1.7">
-        - Always save before<br>battling MALKOR<br><br>
-        - Popups are weak to<br>the Ad-Block Cannon<br><br>
-        - Never open chain<br>mail attachments<br><br>
-        - Broadband = instant<br>win vs DIALUP types<br><br>
-        - Sign guestbook for<br>+50 luck bonus
+      <div class="panel-title">::: COMBAT TIPS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#888;line-height:1.8">
+        BLOCK cuts dmg by 70%<br><br>
+        DODGE avoids all dmg<br>(60% success chance)<br><br>
+        HACK is slow — enemy<br>attacks first<br><br>
+        SPECIAL bar fills each<br>turn automatically<br><br>
+        MALKOR enters RAGE<br>below 25% HP<br><br>
+        Watch for STUN —<br>you lose your turn<br><br>
+        BURN ticks every turn<br>until it expires
       </div>
     </div>
   </div>
 </div>
-
 <div class="site-footer">
-  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED | DO NOT STEAL MY HTML</div>
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED</div>
   <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
 </div>
 <script src="../../assets/js/api.js"></script>
 <script>
-var kills = 0;
-var totalXP = 0;
-var battleLog = [];
 
-var XP_MAP = {
-  'MALKOR': 500, 'POPUP': 150, 'COOKIE': 120,
-  'DIALUP': 80,  'WORM':  30
+var ENEMIES={MALKOR:{name:'MALKOR.EXE',maxHp:500,atk:[18,28],defense:8,speed:0.45,xp:500,sprite:"  /\\__/\\\n (>X  X<)\n  (evil)\n  |    |\n  (____)",spriteRage:"  /\\  /\\\n (>!  !<)\n  [RAGE]\n  |\\  /|\n  (____)",color:'#ff4400',moves:['POPUP STORM','DATA CORRUPT','BUFFER OVERFLOW','BLUE SCREEN','VIRUS INJECT'],special:'VIRUS NOVA',specialMsg:'MALKOR unleashes VIRUS NOVA! ALL SYSTEMS CORRUPTED!',specialDmg:[45,65],critChance:0.18,rageThreshold:0.25,statusMoves:{'DATA CORRUPT':{effect:'burn',chance:0.4},'BUFFER OVERFLOW':{effect:'stun',chance:0.35}}},POPUP_GENERAL:{name:'POPUP_GENERAL.EXE',maxHp:280,atk:[12,22],defense:4,speed:0.5,xp:150,sprite:" ___________\n|CLICK HERE!|\n| YOU WON!! |\n|___________|\n     [X]",spriteRage:" ___________\n|!! RAGE !! |\n|X X X X X!|\n|___________|\n  [X][X][X]",color:'#ff8800',moves:['POPUP SPAWN','FAKE ALERT','AD BARRAGE','CURSOR STEAL','FAKE DOWNLOAD'],special:'POPUP STORM',specialMsg:'POPUP STORM! 10 windows open at once! Your CPU melts!',specialDmg:[30,45],critChance:0.15,rageThreshold:0.3,statusMoves:{'FAKE ALERT':{effect:'stun',chance:0.3}}},COOKIE_THIEF:{name:'COOKIE_THIEF.BAT',maxHp:200,atk:[10,20],defense:3,speed:0.6,xp:120,sprite:"  .-------.\n ( COOKIE  )\n  '-------'\n  | steals|\n  '-------'",spriteRage:"  .-------.\n (>STEALING)\n  '-------'\n  |SESSION|\n  '-------'",color:'#ffaa00',moves:['COOKIE GRAB','SESSION STEAL','KEYLOG','PHISH HOOK','TRACK PIXEL'],special:'SESSION WIPE',specialMsg:'FULL SESSION WIPE! Your identity is GONE! STUNNED!',specialDmg:[25,35],critChance:0.2,rageThreshold:0.35,statusMoves:{'KEYLOG':{effect:'burn',chance:0.35},'PHISH HOOK':{effect:'stun',chance:0.4}}},DIALUP_DRAIN:{name:'DIALUP_DRAIN.VBS',maxHp:150,atk:[8,16],defense:2,speed:0.4,xp:80,sprite:"~*~kshhhhh~*~\n ( 5  6  k )\n  VAMPIRE!!\n ~*~kshhhhh",spriteRage:"KSHHHHHHHHH!\n (>RAGE MODE)\n  56k FURY!!\n KSHHHHHHHH!",color:'#aaaaaa',moves:['BANDWIDTH SUCK','LINE DROP','BUSY SIGNAL','PING FLOOD','TIMEOUT'],special:'MODEM SCREAM',specialMsg:'MODEM SCREAM! KSHHHHHHH! You are stunned for 2 turns!',specialDmg:[20,30],critChance:0.12,rageThreshold:0.3,statusMoves:{'BUSY SIGNAL':{effect:'stun',chance:0.5},'TIMEOUT':{effect:'stun',chance:0.35}}},CHAINMAIL_WORM:{name:'CHAINMAIL_WORM.EXE',maxHp:60,atk:[4,10],defense:0,speed:0.7,xp:30,sprite:" o~o~o~o~o~o\n CHAIN MAIL\n  WORM.EXE\no~o~o~o~o~o",spriteRage:"!!!!!!!!!!!!!\nFORWARD NOW!\nOR BAD LUCK!\n!!!!!!!!!!!!", color:'#888888',moves:['CHAIN LETTER','FORWARD SPAM','BAD LUCK CURSE','INBOX CLOG','ATTACHMENT'],special:'MASS FORWARD',specialMsg:'MASS FORWARD! All contacts spammed! Embarrassment -20 HP!',specialDmg:[12,20],critChance:0.1,rageThreshold:0.4,statusMoves:{'BAD LUCK CURSE':{effect:'burn',chance:0.45}}}};
+var HERO_MOVES=[{id:'punch',label:'PUNCH',dmg:[8,15],spCost:0,spGain:15,desc:'Fast jab'},{id:'kick',label:'KICK',dmg:[12,22],spCost:0,spGain:20,desc:'Solid kick'},{id:'hack',label:'HACK',dmg:[20,35],spCost:0,spGain:25,desc:'Slow but powerful'},{id:'block',label:'BLOCK',dmg:[0,0],spCost:0,spGain:10,desc:'Reduce dmg 70%'},{id:'dodge',label:'DODGE',dmg:[0,0],spCost:0,spGain:12,desc:'Avoid attack 60%'},{id:'special',label:'SPECIAL',dmg:[40,60],spCost:100,spGain:0,desc:'ULTIMATE (full bar)'}];
+var BS={active:false,enemyKey:null,enemy:null,heroHp:0,heroMaxHp:100,enemyHp:0,enemyMaxHp:0,heroSp:0,enemySp:0,round:1,heroStatuses:[],enemyStatuses:[],heroBlocking:false,heroDodging:false,busy:false,enemyRage:false,wins:0,losses:0,totalDmgDealt:0,turnCount:0,currentEnemyCard:null,currentBattleBtn:null};
+var kills=0,totalXP=0;
+
+function startBattle(btn,eKey){
+  var e=ENEMIES[eKey];if(!e)return;
+  BS.active=true;BS.enemyKey=eKey;BS.enemy=e;BS.heroHp=BS.heroMaxHp;BS.enemyHp=e.maxHp;BS.enemyMaxHp=e.maxHp;
+  BS.heroSp=0;BS.enemySp=0;BS.round=1;BS.heroStatuses=[];BS.enemyStatuses=[];
+  BS.heroBlocking=false;BS.heroDodging=false;BS.busy=false;BS.enemyRage=false;
+  BS.totalDmgDealt=0;BS.turnCount=0;BS.currentBattleBtn=btn;BS.currentEnemyCard=btn.closest('.enemy-card');
+  var heroName=(window.API?API.getHeroName():localStorage.getItem('chosen_hero'))||'HERO';
+  document.getElementById('hero-label').textContent=heroName;
+  document.getElementById('hero-name-tag').textContent=heroName;
+  document.getElementById('enemy-label').textContent=e.name;
+  document.getElementById('enemy-name-tag').textContent=e.name;
+  document.getElementById('b-enemy-title').textContent='VS '+e.name;
+  document.getElementById('hero-hp-max').textContent=BS.heroMaxHp;
+  document.getElementById('enemy-hp-max').textContent=e.maxHp;
+  document.getElementById('enemy-sprite').textContent=e.sprite;
+  document.getElementById('enemy-sprite').style.color=e.color;
+  document.getElementById('b-log-lines').innerHTML='';
+  document.getElementById('battle-result').style.display='none';
+  document.getElementById('b-round-label').textContent='ROUND '+BS.round;
+  updateBars();buildMoveButtons();
+  document.getElementById('battle-overlay').classList.add('active');
+  announceRound('ROUND 1',function(){
+    battleLog('system','BATTLE START! '+heroName+' vs '+e.name+'!');
+    battleLog('system','SELECT YOUR MOVE!');
+    setButtonsEnabled(true);
+  });
+  if(window.SFX)SFX.alert();
+}
+
+function updateBars(){
+  var hp=Math.max(0,BS.heroHp/BS.heroMaxHp*100);
+  var ep=Math.max(0,BS.enemyHp/BS.enemyMaxHp*100);
+  document.getElementById('hero-hp-fill').style.width=hp+'%';
+  document.getElementById('enemy-hp-fill').style.width=ep+'%';
+  document.getElementById('hero-sp-fill').style.width=BS.heroSp+'%';
+  document.getElementById('enemy-sp-fill').style.width=BS.enemySp+'%';
+  document.getElementById('hero-hp-val').textContent=Math.max(0,BS.heroHp);
+  document.getElementById('enemy-hp-val').textContent=Math.max(0,BS.enemyHp);
+  var hf=document.getElementById('hero-hp-fill');
+  hf.style.background=hp<25?'linear-gradient(90deg,#880000,#ff2200)':hp<50?'linear-gradient(90deg,#885500,#ffaa00)':'';
+}
+
+function buildMoveButtons(){
+  var grid=document.getElementById('move-buttons');grid.innerHTML='';
+  HERO_MOVES.forEach(function(m){
+    var b=document.createElement('button');
+    b.className='b-move-btn'+(m.id==='special'?' special-btn':'');
+    b.id='move-btn-'+m.id;
+    b.innerHTML=m.label+'<span class="move-cost">'+(m.id==='special'?'FULL BAR':m.dmg[1]>0?m.dmg[0]+'-'+m.dmg[1]+' DMG':m.id.toUpperCase())+'</span>';
+    b.disabled=true;b.title=m.desc;
+    b.onclick=function(){heroMove(m);};
+    grid.appendChild(b);
+  });
+}
+
+function setButtonsEnabled(v){
+  HERO_MOVES.forEach(function(m){
+    var b=document.getElementById('move-btn-'+m.id);if(!b)return;
+    b.disabled=m.id==='special'?(!v||BS.heroSp<100):!v;
+  });
+  if(hasStatus(BS.heroStatuses,'stun')){
+    HERO_MOVES.forEach(function(m){
+      var b=document.getElementById('move-btn-'+m.id);
+      if(b&&m.id!=='block')b.disabled=true;
+    });
+  }
+}
+
+function battleLog(type,text){
+  var el=document.getElementById('b-log-lines');
+  while(el.children.length>=2)el.removeChild(el.firstChild);
+  var d=document.createElement('div');d.className='b-log-line '+type;d.textContent='> '+text;el.appendChild(d);
+}
+
+function floatDamage(side,amount,isCrit){
+  var arena=document.getElementById('battle-arena');
+  var el=document.createElement('div');el.className='dmg-float';
+  el.textContent='-'+amount+(isCrit?'!!':'');
+  el.style.color=isCrit?'#ffffff':(side==='hero'?'#ff4444':'#ffaa00');
+  el.style.left=side==='hero'?'20%':'70%';el.style.top='40%';
+  arena.appendChild(el);
+  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},1300);
+}
+
+function showSpecialFX(text,color){
+  var l=document.getElementById('special-fx-layer');l.style.display='flex';
+  l.innerHTML='<div class="special-text" style="color:'+color+'">'+text+'</div>';
+  setTimeout(function(){l.style.display='none';l.innerHTML='';},900);
+}
+
+function announceRound(text,cb){
+  var ra=document.getElementById('round-announce');
+  ra.innerHTML='<div class="round-text">'+text+'</div>';
+  setTimeout(function(){ra.innerHTML='';if(cb)cb();},1600);
+}
+
+function anim(id,cls,dur){
+  var el=document.getElementById(id);el.classList.add(cls);
+  setTimeout(function(){el.classList.remove(cls);},dur);
+}
+
+function hasStatus(arr,type){return arr.some(function(s){return s.type===type;});}
+function addStatus(arr,type,turns){
+  var e=arr.find(function(s){return s.type===type;});
+  if(e)e.turns=Math.max(e.turns,turns);else arr.push({type:type,turns:turns});
+}
+function tickStatuses(arr){arr.forEach(function(s){s.turns--;});return arr.filter(function(s){return s.turns>0;});}
+function renderStatuses(arr,elId){
+  var el=document.getElementById(elId);
+  el.innerHTML=arr.map(function(s){
+    var cls=s.type==='burn'?'status-burn':s.type==='stun'?'status-stun':'status-shield';
+    var lbl=s.type==='burn'?'BURN('+s.turns+')':s.type==='stun'?'STUN('+s.turns+')':'SHIELD('+s.turns+')';
+    return '<span class="status-effect '+cls+'">'+lbl+'</span>';
+  }).join('');
+}
+function applyBurn(who){
+  var arr=who==='hero'?BS.heroStatuses:BS.enemyStatuses;
+  if(!hasStatus(arr,'burn'))return;
+  var d=Math.floor(Math.random()*4)+3;
+  if(who==='hero'){BS.heroHp-=d;battleLog('enemy-action','BURN deals '+d+' dmg to you!');}
+  else{BS.enemyHp-=d;battleLog('hero-action','BURN deals '+d+' dmg to '+BS.enemy.name+'!');}
+}
+function rollDmg(mn,mx){return Math.floor(Math.random()*(mx-mn+1))+mn;}
+function isCrit(c){return Math.random()<c;}
+
+function heroMove(move){
+  if(BS.busy||!BS.active)return;
+  BS.busy=true;setButtonsEnabled(false);BS.turnCount++;
+  BS.heroBlocking=move.id==='block';BS.heroDodging=move.id==='dodge';
+  BS.heroSp=Math.min(100,BS.heroSp+move.spGain);
+
+  if(hasStatus(BS.heroStatuses,'stun')&&move.id!=='block'){
+    battleLog('system','YOU ARE STUNNED! Skipping turn...');
+    anim('hero-sprite','anim-flash',400);
+    BS.heroStatuses=tickStatuses(BS.heroStatuses);
+    renderStatuses(BS.heroStatuses,'hero-statuses');
+    setTimeout(function(){enemyTurn(true);},800);return;
+  }
+  if(move.id==='hack'){
+    battleLog('hero-action','You wind up HACK...');
+    setTimeout(function(){enemyTurn(false,function(){resolveHero(move);});},500);return;
+  }
+  resolveHero(move);
+}
+
+function resolveHero(move){
+  if(move.id==='block'){
+    showSpecialFX('BLOCK!','#4488ff');anim('hero-sprite','anim-flash',300);
+    battleLog('hero-action','You brace for impact!');
+    addStatus(BS.heroStatuses,'shield',1);afterHero(0,false);return;
+  }
+  if(move.id==='dodge'){
+    var ok=Math.random()<0.6;
+    if(ok){showSpecialFX('DODGE!','#00ffaa');anim('hero-sprite','anim-jump',400);
+      battleLog('hero-action','You dodge completely!');addStatus(BS.heroStatuses,'shield',1);}
+    else battleLog('hero-action','Dodge FAILED! You stumble!');
+    afterHero(0,false);return;
+  }
+  if(move.id==='special'){
+    if(BS.heroSp<100){battleLog('system','SPECIAL BAR NOT FULL!');BS.busy=false;setButtonsEnabled(true);return;}
+    BS.heroSp=0;
+    var d=rollDmg(move.dmg[0],move.dmg[1]);var c=isCrit(0.3);if(c)d=Math.floor(d*1.8);
+    showSpecialFX('ULTIMATE!!!','#ffff00');
+    anim('enemy-sprite','anim-hit-r',500);anim('hero-sprite','anim-jump',400);
+    BS.enemyHp-=d;BS.totalDmgDealt+=d;floatDamage('enemy',d,c);
+    battleLog('hero-action','ULTIMATE! '+d+(c?' CRITICAL!!!':'')+' dmg to '+BS.enemy.name+'!');
+    if(window.SFX)SFX.missionComplete();afterHero(d,c);return;
+  }
+  var d=rollDmg(move.dmg[0],move.dmg[1]);var c=isCrit(0.15);
+  if(c)d=Math.floor(d*1.7);
+  d=Math.max(1,d-(BS.enemyRage?Math.floor(BS.enemy.defense*0.5):BS.enemy.defense));
+  anim('hero-sprite','anim-jump',250);anim('enemy-sprite','anim-hit-r',400);anim('enemy-sprite','anim-flash',250);
+  BS.enemyHp-=d;BS.totalDmgDealt+=d;floatDamage('enemy',d,c);
+  if(c){showSpecialFX('CRITICAL!','#ff8800');battleLog('hero-action',move.label+'! CRIT! '+d+' dmg!');}
+  else battleLog('hero-action',move.label+'! '+d+' dmg to '+BS.enemy.name+'!');
+  if(window.SFX)SFX.blip();
+  afterHero(d,c);
+}
+
+function afterHero(dmg,crit){
+  applyBurn('enemy');updateBars();renderStatuses(BS.heroStatuses,'hero-statuses');
+  if(BS.enemyHp<=0){setTimeout(battleWin,600);return;}
+  if(!BS.enemyRage&&BS.enemyHp/BS.enemyMaxHp<=BS.enemy.rageThreshold){
+    BS.enemyRage=true;
+    document.getElementById('enemy-sprite').textContent=BS.enemy.spriteRage||BS.enemy.sprite;
+    showSpecialFX('RAGE MODE!','#ff0000');
+    battleLog('system',BS.enemy.name+' enters RAGE! ATK up!');
+  }
+  setTimeout(function(){enemyTurn(false);},700);
+}
+
+function enemyTurn(stunned,callback){
+  if(BS.enemyHp<=0){if(callback)callback();return;}
+  BS.enemyStatuses=tickStatuses(BS.enemyStatuses);
+  renderStatuses(BS.enemyStatuses,'enemy-statuses');
+  BS.enemySp=Math.min(100,BS.enemySp+15+(BS.enemyRage?10:0));
+
+  if(hasStatus(BS.enemyStatuses,'stun')){
+    battleLog('system',BS.enemy.name+' is STUNNED! Loses turn!');
+    anim('enemy-sprite','anim-flash',400);
+    BS.enemyStatuses=tickStatuses(BS.enemyStatuses);
+    renderStatuses(BS.enemyStatuses,'enemy-statuses');
+    finishEnemy(callback);return;
+  }
+
+  if(BS.enemySp>=100){
+    BS.enemySp=0;
+    var sd=rollDmg(BS.enemy.specialDmg[0],BS.enemy.specialDmg[1]);
+    if(hasStatus(BS.heroStatuses,'shield')){
+      sd=Math.floor(sd*0.2);battleLog('system','SHIELD absorbs special! Only '+sd+' dmg!');
+    } else {
+      battleLog('enemy-action',BS.enemy.specialMsg);
+      if(Math.random()<0.6){addStatus(BS.heroStatuses,'stun',1);battleLog('system','YOU ARE STUNNED!');}
+    }
+    showSpecialFX(BS.enemy.special+'!','#ff0000');
+    anim('hero-sprite','anim-hit-l',500);anim('hero-sprite','anim-flash',300);
+    BS.heroHp-=sd;floatDamage('hero',sd,true);
+    if(window.SFX)SFX.enemyDefeat();
+    updateBars();if(BS.heroHp<=0){setTimeout(battleLose,600);return;}
+    finishEnemy(callback);return;
+  }
+
+  var moveName=BS.enemy.moves[Math.floor(Math.random()*BS.enemy.moves.length)];
+  var d=rollDmg(BS.enemy.atk[0],BS.enemy.atk[1]);
+  if(BS.enemyRage)d=Math.floor(d*1.5);
+  var c=isCrit(BS.enemy.critChance);if(c)d=Math.floor(d*1.6);
+
+  if(hasStatus(BS.heroStatuses,'shield')){
+    if(BS.heroDodging&&Math.random()<0.6){
+      battleLog('system','DODGED '+moveName+'! No damage!');
+      anim('hero-sprite','anim-dodge',300);d=0;
+    } else {
+      d=Math.floor(d*0.3);
+      battleLog('system','BLOCK! '+moveName+' reduced to '+d+' dmg!');
+    }
+  } else {
+    battleLog('enemy-action',BS.enemy.name+' uses '+moveName+'!'+(c?' CRIT!':'')+' '+d+' dmg!');
+  }
+
+  if(d>0){
+    anim('hero-sprite','anim-hit-l',400);anim('hero-sprite','anim-flash',250);
+    floatDamage('hero',d,c);BS.heroHp-=d;if(window.SFX)SFX.bloop();
+  }
+
+  var sm=BS.enemy.statusMoves&&BS.enemy.statusMoves[moveName];
+  if(sm&&Math.random()<sm.chance){addStatus(BS.heroStatuses,sm.effect,2);battleLog('system','You are '+sm.effect.toUpperCase()+'ED!');}
+  applyBurn('hero');
+  updateBars();renderStatuses(BS.heroStatuses,'hero-statuses');renderStatuses(BS.enemyStatuses,'enemy-statuses');
+  BS.heroStatuses=tickStatuses(BS.heroStatuses);
+  BS.heroBlocking=false;BS.heroDodging=false;
+  if(BS.heroHp<=0){setTimeout(battleLose,600);return;}
+  finishEnemy(callback);
+}
+
+function finishEnemy(callback){
+  if(callback){setTimeout(callback,400);}
+  else{BS.turnCount++;updateBars();setTimeout(function(){BS.busy=false;setButtonsEnabled(true);},300);}
+}
+
+function battleWin(){
+  BS.active=false;BS.wins++;kills++;totalXP+=BS.enemy.xp;
+  announceRound('K.O.!!!',function(){
+    anim('enemy-sprite','anim-ko',800);showSpecialFX('YOU WIN!','#00ff00');
+    if(window.SFX)SFX.missionComplete();
+    document.getElementById('result-title').className='result-title result-win';
+    document.getElementById('result-title').textContent='YOU WIN!';
+    document.getElementById('result-stats').innerHTML=
+      BS.enemy.name+' DEFEATED!<br>XP EARNED: +'+BS.enemy.xp+
+      '<br>DMG DEALT: '+BS.totalDmgDealt+'<br>TURNS: '+BS.turnCount+
+      '<br>HP LEFT: '+Math.max(0,BS.heroHp)+
+      (BS.heroHp===BS.heroMaxHp?'<br>PERFECT VICTORY!':'');
+    if(BS.currentEnemyCard){BS.currentEnemyCard.dataset.defeated='true';BS.currentEnemyCard.style.opacity='0.5';}
+    if(BS.currentBattleBtn){BS.currentBattleBtn.textContent='[ DEFEATED ]';BS.currentBattleBtn.disabled=true;BS.currentBattleBtn.style.background='#003300';BS.currentBattleBtn.style.color='#00aa00';}
+    document.getElementById('killcount').textContent=kills;
+    API.postEvent('BATTLEFIELD',BS.enemy.name+' defeated by '+API.getHeroName()).catch(function(){});
+    API.updateScore(totalXP,kills).catch(function(){});
+    setTimeout(function(){document.getElementById('battle-result').style.display='flex';},900);
+  });
+}
+
+function battleLose(){
+  BS.active=false;BS.losses++;
+  announceRound('K.O.!!!',function(){
+    anim('hero-sprite','anim-ko',800);showSpecialFX('GAME OVER!','#ff0000');
+    if(window.SFX)SFX.bloop();
+    document.getElementById('result-title').className='result-title result-lose';
+    document.getElementById('result-title').textContent='GAME OVER!';
+    document.getElementById('result-stats').innerHTML=
+      'DEFEATED BY '+BS.enemy.name+'<br>DMG DEALT: '+BS.totalDmgDealt+
+      '<br>TURNS: '+BS.turnCount+'<br>TIP: Try BLOCK or DODGE!';
+    setTimeout(function(){document.getElementById('battle-result').style.display='flex';},900);
+  });
+}
+
+document.getElementById('result-rematch').onclick=function(){startBattle(BS.currentBattleBtn,BS.enemyKey);};
+document.getElementById('result-exit').onclick=function(){
+  document.getElementById('battle-overlay').classList.remove('active');
+  BS.active=false;
+  document.getElementById('hero-sprite').style.transform='';
+  document.getElementById('enemy-sprite').style.transform='';
 };
 
-function defeat(btn, name){
-  var card = btn.closest('.enemy-card');
-  if(card.dataset.defeated === 'true') return;
-  card.dataset.defeated = 'true';
-  btn.textContent = '[ DEFEATED ]';
-  btn.disabled    = true;
-  btn.style.background = '#003300';
-  btn.style.color      = '#00aa00';
-  card.style.opacity   = '0.5';
-
-  var xpGain = XP_MAP[name] || 50;
-  kills   += 1;
-  totalXP += xpGain;
-
-  document.getElementById('killcount').textContent = kills;
-
-  var msg = '[' + new Date().toLocaleTimeString() + '] ' + name + ' defeated! +' + xpGain + ' XP';
-  battleLog.unshift(msg);
-  if(battleLog.length > 6) battleLog.pop();
-  document.getElementById('battle-log').innerHTML = battleLog.join('<br>');
-
-  // Post world event
-  if (window.SFX) SFX.enemyDefeat();
-  API.postEvent('BATTLEFIELD', name + ' defeated by ' + API.getHeroName()).catch(function(){});
-
-  // Sync score to backend
-  API.updateScore(totalXP, kills).catch(function(){});
-}
+document.addEventListener('keydown',function(e){
+  if(!BS.active||BS.busy)return;
+  var map={'1':'punch','2':'kick','3':'hack','4':'block','5':'dodge','6':'special'};
+  if(map[e.key]){var m=HERO_MOVES.find(function(x){return x.id===map[e.key];});if(m)heroMove(m);}
+  if(e.key==='Escape')document.getElementById('result-exit').onclick();
+});
 
 function filterEnemies(){
-  var q            = document.getElementById('search').value.toLowerCase();
-  var critOnly     = document.getElementById('f-critical').checked;
-  var hideDefeated = document.getElementById('f-defeated').checked;
+  var q=document.getElementById('search').value.toLowerCase();
+  var co=document.getElementById('f-critical').checked;
+  var hd=document.getElementById('f-defeated').checked;
   document.querySelectorAll('.enemy-card').forEach(function(card){
-    var name     = card.dataset.name.toLowerCase();
-    var level    = card.dataset.level;
-    var defeated = card.dataset.defeated === 'true';
-    var show     = name.includes(q);
-    if(critOnly && level !== 'critical') show = false;
-    if(hideDefeated && defeated)         show = false;
-    card.style.display = show ? '' : 'none';
+    var show=card.dataset.name.toLowerCase().includes(q);
+    if(co&&card.dataset.level!=='critical')show=false;
+    if(hd&&card.dataset.defeated==='true')show=false;
+    card.style.display=show?'':'none';
   });
 }
 
-// Load leaderboard
 function loadLeaderboard(){
   API.getLeaderboard().then(function(data){
-    var el = document.getElementById('leaderboard');
-    if(!data.leaderboard.length){ el.textContent = 'No scores yet.'; return; }
-    el.innerHTML = data.leaderboard.slice(0,5).map(function(s,i){
-      return '<span style="color:var(--yellow)">#'+(i+1)+'</span> ' +
-             s.hero_name + ' &mdash; <span style="color:var(--green)">' + s.xp + ' XP</span> / ' +
-             s.kills + ' kills';
+    var el=document.getElementById('leaderboard');
+    if(!data.leaderboard.length){el.textContent='No scores yet.';return;}
+    el.innerHTML=data.leaderboard.slice(0,5).map(function(s,i){
+      return '<span style="color:var(--yellow)">#'+(i+1)+'</span> '+s.hero_name+
+             ' &mdash; <span style="color:var(--green)">'+s.xp+' XP</span> / '+s.kills+' kills';
     }).join('<br>');
-  }).catch(function(){
-    document.getElementById('leaderboard').textContent = 'BACKEND OFFLINE';
-  });
+  }).catch(function(){document.getElementById('leaderboard').textContent='BACKEND OFFLINE';});
 }
-loadLeaderboard();
-setInterval(loadLeaderboard, 10000);
+loadLeaderboard();setInterval(loadLeaderboard,10000);
+
 </script>
 </body>
 </html>
