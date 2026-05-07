@@ -86,6 +86,33 @@ def init_db():
                 event_text TEXT NOT NULL,
                 created_at TEXT DEFAULT (datetime('now'))
             );
+
+            CREATE TABLE IF NOT EXISTS inventory (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id  TEXT NOT NULL,
+                item_id     TEXT NOT NULL,
+                item_name   TEXT NOT NULL,
+                item_type   TEXT NOT NULL,
+                rarity      TEXT DEFAULT 'common',
+                description TEXT,
+                atk_bonus   INTEGER DEFAULT 0,
+                def_bonus   INTEGER DEFAULT 0,
+                hp_bonus    INTEGER DEFAULT 0,
+                equipped    INTEGER DEFAULT 0,
+                dropped_by  TEXT,
+                acquired_at TEXT DEFAULT (datetime('now')),
+                UNIQUE(session_id, item_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS mission_tasks (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id  TEXT NOT NULL,
+                mission_idx INTEGER NOT NULL,
+                task_idx    INTEGER NOT NULL,
+                completed   INTEGER DEFAULT 0,
+                completed_at TEXT,
+                UNIQUE(session_id, mission_idx, task_idx)
+            );
         """)
 
         # Seed guestbook if empty
@@ -502,6 +529,164 @@ def visitors_increment():
         conn.commit()
         count = conn.execute("SELECT count FROM visitors WHERE id=1").fetchone()["count"]
     return jsonify({"count": count})
+
+
+# ---------------------------------------------------------------------------
+# INVENTORY  /api/inventory
+# ---------------------------------------------------------------------------
+
+ITEM_CATALOG = {
+    "popup_badge":       {"name":"Popup Immunity Badge",    "type":"accessory","rarity":"common",  "description":"Grants resistance to popup attacks. Dropped by popup minions.","atk_bonus":0, "def_bonus":5,  "hp_bonus":0},
+    "cookie_jar":        {"name":"Cracked Cookie Jar",      "type":"accessory","rarity":"common",  "description":"A jar of stolen cookies. Smells suspicious.","atk_bonus":0, "def_bonus":0,  "hp_bonus":10},
+    "dialup_crystal":    {"name":"56k Dial-up Crystal",     "type":"relic",    "rarity":"uncommon","description":"Hums with the sound of a modem. Slows enemies.","atk_bonus":5, "def_bonus":0,  "hp_bonus":0},
+    "chain_amulet":      {"name":"Chain Mail Amulet",       "type":"accessory","rarity":"common",  "description":"Cursed amulet from a chain letter. Forward to 10 friends or else.","atk_bonus":3, "def_bonus":3,  "hp_bonus":0},
+    "ad_block_fragment": {"name":"Ad-Block Cannon Fragment","type":"weapon",   "rarity":"uncommon","description":"A shard from a destroyed Ad-Block Cannon. Still fires occasionally.","atk_bonus":12,"def_bonus":0,  "hp_bonus":0},
+    "session_token":     {"name":"Stolen Session Token",    "type":"relic",    "rarity":"uncommon","description":"Stolen from COOKIE_THIEF. Grants temporary identity shift.","atk_bonus":8, "def_bonus":0,  "hp_bonus":5},
+    "bandwidth_blade":   {"name":"Broadband Blade Shard",   "type":"weapon",   "rarity":"rare",    "description":"Fragment of the legendary Broadband Blade. Still cuts through dial-up.","atk_bonus":20,"def_bonus":0,  "hp_bonus":0},
+    "virus_core":        {"name":"MALKOR Virus Core",       "type":"relic",    "rarity":"legendary","description":"The corrupted heart of MALKOR.EXE. Radiates dark energy.","atk_bonus":25,"def_bonus":10, "hp_bonus":20},
+    "firewall_gauntlet": {"name":"Firewall Gauntlet",       "type":"armor",    "rarity":"rare",    "description":"Dropped by elite popup generals. Blocks incoming attacks.","atk_bonus":0, "def_bonus":20, "hp_bonus":0},
+    "modem_whip":        {"name":"Modem Whip",              "type":"weapon",   "rarity":"uncommon","description":"Made from a tangled phone cord. Makes a horrifying KSHHHHH sound.","atk_bonus":15,"def_bonus":0,  "hp_bonus":0},
+    "zip_fragment":      {"name":"ZIP File Fragment",       "type":"relic",    "rarity":"legendary","description":"A piece of the Sacred ZIP File. Glows with ancient code.","atk_bonus":0, "def_bonus":0,  "hp_bonus":30},
+    "popup_shield":      {"name":"Popup Shield",            "type":"armor",    "rarity":"common",  "description":"A shield made from deflected popup windows.","atk_bonus":0, "def_bonus":10, "hp_bonus":0},
+}
+
+ENEMY_DROPS = {
+    "MALKOR":          [("virus_core",0.8),("zip_fragment",0.6),("bandwidth_blade",0.9),("firewall_gauntlet",0.5)],
+    "POPUP_GENERAL":   [("ad_block_fragment",0.9),("popup_shield",0.8),("popup_badge",1.0),("firewall_gauntlet",0.3)],
+    "COOKIE_THIEF":    [("cookie_jar",1.0),("session_token",0.85),("chain_amulet",0.4)],
+    "DIALUP_DRAIN":    [("dialup_crystal",0.9),("modem_whip",0.75),("popup_badge",0.5)],
+    "CHAINMAIL_WORM":  [("chain_amulet",1.0),("popup_badge",0.6),("cookie_jar",0.4)],
+}
+
+@app.route("/api/inventory/<session_id>", methods=["GET"])
+def inventory_get(session_id):
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT * FROM inventory WHERE session_id=? ORDER BY acquired_at DESC",
+            (session_id,)
+        ).fetchall()
+    return jsonify({"items": rows_to_list(rows)})
+
+@app.route("/api/inventory/<session_id>/drop/<item_id>", methods=["POST"])
+def inventory_drop_enemy(session_id, item_id):
+    """Called after defeating an enemy — rolls for drops and adds to inventory."""
+    data      = request.get_json(force=True) or {}
+    enemy_key = (data.get("enemy_key") or "").upper()
+    drops     = ENEMY_DROPS.get(enemy_key, [])
+    added     = []
+
+    with get_db() as conn:
+        for drop_id, chance in drops:
+            if random.random() <= chance:
+                catalog = ITEM_CATALOG.get(drop_id)
+                if not catalog:
+                    continue
+                # unique item_id per session uses drop_id + timestamp suffix for stackable
+                uid = drop_id + "_" + str(int(random.random()*9999))
+                try:
+                    conn.execute(
+                        """INSERT OR IGNORE INTO inventory
+                           (session_id,item_id,item_name,item_type,rarity,description,
+                            atk_bonus,def_bonus,hp_bonus,equipped,dropped_by)
+                           VALUES (?,?,?,?,?,?,?,?,?,0,?)""",
+                        (session_id, uid, catalog["name"], catalog["type"],
+                         catalog["rarity"], catalog["description"],
+                         catalog["atk_bonus"], catalog["def_bonus"],
+                         catalog["hp_bonus"], enemy_key)
+                    )
+                    added.append({"item_id": uid, "item_name": catalog["name"],
+                                  "rarity": catalog["rarity"]})
+                except Exception:
+                    pass
+        conn.commit()
+
+    return jsonify({"drops": added, "count": len(added)}), 201
+
+@app.route("/api/inventory/<session_id>/equip/<item_id>", methods=["POST"])
+def inventory_equip(session_id, item_id):
+    data   = request.get_json(force=True) or {}
+    equip  = 1 if data.get("equip", True) else 0
+    with get_db() as conn:
+        # Unequip others of same type if equipping
+        if equip:
+            item = conn.execute(
+                "SELECT item_type FROM inventory WHERE session_id=? AND item_id=?",
+                (session_id, item_id)
+            ).fetchone()
+            if item:
+                conn.execute(
+                    "UPDATE inventory SET equipped=0 WHERE session_id=? AND item_type=?",
+                    (session_id, item["item_type"])
+                )
+        conn.execute(
+            "UPDATE inventory SET equipped=? WHERE session_id=? AND item_id=?",
+            (equip, session_id, item_id)
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT * FROM inventory WHERE session_id=? AND item_id=?",
+            (session_id, item_id)
+        ).fetchone()
+    return jsonify(row_to_dict(row))
+
+@app.route("/api/inventory/<session_id>/remove/<item_id>", methods=["DELETE"])
+def inventory_remove(session_id, item_id):
+    with get_db() as conn:
+        conn.execute(
+            "DELETE FROM inventory WHERE session_id=? AND item_id=?",
+            (session_id, item_id)
+        )
+        conn.commit()
+    return jsonify({"deleted": item_id})
+
+@app.route("/api/inventory/<session_id>/stats", methods=["GET"])
+def inventory_stats(session_id):
+    """Return total bonuses from all equipped items."""
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT * FROM inventory WHERE session_id=? AND equipped=1",
+            (session_id,)
+        ).fetchall()
+    items = rows_to_list(rows)
+    total_atk = sum(i["atk_bonus"] for i in items)
+    total_def = sum(i["def_bonus"] for i in items)
+    total_hp  = sum(i["hp_bonus"]  for i in items)
+    return jsonify({"atk_bonus": total_atk, "def_bonus": total_def,
+                    "hp_bonus": total_hp, "equipped_count": len(items)})
+
+
+# ---------------------------------------------------------------------------
+# MISSION TASKS  /api/missions/<session_id>/tasks
+# ---------------------------------------------------------------------------
+
+@app.route("/api/missions/<session_id>/tasks/<int:mission_idx>", methods=["GET"])
+def mission_tasks_get(session_id, mission_idx):
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT * FROM mission_tasks WHERE session_id=? AND mission_idx=? ORDER BY task_idx",
+            (session_id, mission_idx)
+        ).fetchall()
+    return jsonify({"tasks": rows_to_list(rows), "mission_idx": mission_idx})
+
+@app.route("/api/missions/<session_id>/tasks/<int:mission_idx>/<int:task_idx>", methods=["POST"])
+def mission_task_complete(session_id, mission_idx, task_idx):
+    with get_db() as conn:
+        existing = conn.execute(
+            "SELECT * FROM mission_tasks WHERE session_id=? AND mission_idx=? AND task_idx=?",
+            (session_id, mission_idx, task_idx)
+        ).fetchone()
+        if existing:
+            conn.execute(
+                "UPDATE mission_tasks SET completed=1,completed_at=? WHERE session_id=? AND mission_idx=? AND task_idx=?",
+                (datetime.utcnow().isoformat(), session_id, mission_idx, task_idx)
+            )
+        else:
+            conn.execute(
+                "INSERT INTO mission_tasks (session_id,mission_idx,task_idx,completed,completed_at) VALUES (?,?,?,1,?)",
+                (session_id, mission_idx, task_idx, datetime.utcnow().isoformat())
+            )
+        conn.commit()
+    return jsonify({"mission_idx": mission_idx, "task_idx": task_idx, "completed": True})
 
 
 # ---------------------------------------------------------------------------
