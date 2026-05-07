@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MISSION TASK :: Chosen.net</title>
+<link rel="stylesheet" href="../../assets/css/style.css">
+<script src="../../assets/js/sounds.js"></script>
+<script src="../../assets/js/hero-setup.js"></script>
+<style>
+.task-card{border:2px solid #002244;background:#000811;padding:14px;margin-bottom:10px;position:relative;transition:all 0.2s}
+.task-card.done{border-color:#004400;background:#000a00;opacity:0.8}
+.task-card.active{border-color:var(--yellow);background:#080800}
+.task-num{font-family:'Press Start 2P',monospace;font-size:9px;color:#224488;margin-bottom:6px}
+.task-title{font-family:'VT323',monospace;font-size:20px;color:#88aaff;letter-spacing:2px;margin-bottom:4px}
+.task-card.done .task-title{color:#00aa00}
+.task-desc{font-family:'VT323',monospace;font-size:16px;color:#445566;line-height:1.5;margin-bottom:10px}
+.task-action{font-family:'VT323',monospace;font-size:14px;color:#886644;margin-bottom:10px;border-left:3px solid #443322;padding-left:8px}
+.task-complete-btn{font-family:'Courier Prime',monospace;font-size:13px;font-weight:700;background:#001133;color:#4488ff;border:1px solid #224488;padding:8px 16px;cursor:pointer;letter-spacing:1px;transition:all 0.15s}
+.task-complete-btn:hover{background:#0033aa;color:#fff;border-color:#4488ff}
+.task-complete-btn:disabled{background:#001100;color:#004400;border-color:#002200;cursor:not-allowed}
+.task-done-badge{font-family:'VT323',monospace;font-size:16px;color:#00aa00;padding:6px 12px;border:1px solid #004400;background:#001100;display:inline-block}
+.task-timer{font-family:'VT323',monospace;font-size:14px;color:#886644}
+.task-xp-badge{font-family:'VT323',monospace;font-size:14px;color:var(--yellow);border:1px solid #884400;background:#110800;padding:2px 8px;display:inline-block;margin-left:8px}
+/* progress tracker */
+.step-tracker{display:flex;gap:0;margin-bottom:16px;overflow:hidden;border:1px solid #222}
+.step-dot{flex:1;height:8px;background:#111;transition:background 0.4s}
+.step-dot.done{background:#0066cc}
+.step-dot.current{background:var(--yellow);animation:blink 1s step-end infinite}
+/* mission complete overlay */
+#complete-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center}
+#complete-overlay.show{display:flex}
+.co-title{font-family:'Press Start 2P',monospace;font-size:24px;color:var(--green);text-shadow:0 0 30px var(--green);margin-bottom:16px;letter-spacing:2px;text-align:center}
+.co-xp{font-family:'VT323',monospace;font-size:28px;color:var(--yellow);margin-bottom:8px}
+.co-drops{font-family:'VT323',monospace;font-size:18px;color:#aaaaaa;margin-bottom:20px;text-align:center;line-height:1.8}
+.co-btn{font-family:'Press Start 2P',monospace;font-size:10px;padding:12px 24px;cursor:pointer;border:none;margin:4px;letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<!-- Mission Complete Overlay -->
+<div id="complete-overlay">
+  <div class="co-title">MISSION COMPLETE!</div>
+  <div class="co-xp" id="co-xp">+150 XP EARNED</div>
+  <div class="co-drops" id="co-drops"></div>
+  <div>
+    <button class="co-btn" style="background:var(--green);color:#000" onclick="goToMissions()">[ BACK TO MISSIONS ]</button>
+    <button class="co-btn" style="background:#003399;color:#fff" onclick="goToInventory()">[ VIEW INVENTORY ]</button>
+  </div>
+</div>
+
+<div class="marquee-wrap">
+  <div class="marquee-inner" id="marquee-text">*** MISSION IN PROGRESS *** COMPLETE ALL TASKS TO AUTO-CHECK THE MISSION ***</div>
+</div>
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="/">[HOME]</a>
+  <a href="/mission">[MISSION]</a>
+  <a href="/prophecy">[PROPHECY]</a>
+  <a href="/enemies">[ENEMY FILES]</a>
+  <a href="/weapons">[WEAPONS]</a>
+  <a href="/inventory">[INVENTORY]</a>
+  <a href="/alliances">[ALLIANCES]</a>
+  <a href="/world">[WORLD MAP]</a>
+  <a href="/guestbook">[GUESTBOOK]</a>
+  <a href="/contact">[CONTACT]</a>
+</nav>
+
+<div class="page-header" id="mission-header">
+  <h1 id="mission-title" style="font-size:20px">LOADING MISSION...</h1>
+  <div class="sub" id="mission-sub">Retrieving briefing from Council servers...</div>
+</div>
+
+<div class="sidebar-layout">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel panel-blue">
+      <div class="panel-title" style="color:#4488ff">::: MISSION STATUS :::</div>
+      <div class="prog-wrap">
+        <div class="prog-label">TASK PROGRESS</div>
+        <div class="prog-bar"><div class="prog-fill blue" id="task-prog" style="width:0%;transition:width 0.5s"></div></div>
+      </div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#aaaaaa;line-height:2;margin-top:6px">
+        TASKS DONE: <span style="color:var(--yellow)" id="tasks-done">0</span> / <span id="tasks-total">0</span><br>
+        XP REWARD: <span style="color:var(--yellow)" id="mission-xp">0</span><br>
+        STATUS: <span style="color:#ffff00" id="mission-status">IN PROGRESS</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">::: INTEL :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#446666;line-height:1.8" id="mission-intel">Loading...</div>
+    </div>
+    <div class="panel panel-orange">
+      <div class="panel-title" style="color:var(--orange)">::: CAUTION :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#886644;line-height:1.7" id="mission-danger">Loading...</div>
+    </div>
+    <div class="panel">
+      <a href="/mission" style="display:block;text-align:center;text-decoration:none" class="btn" style="width:100%">[ BACK TO MISSIONS ]</a>
+    </div>
+    <div class="panel">
+      <div class="panel-title">::: INVENTORY BONUS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#aaaaaa;line-height:1.8">
+        ATK +<span style="color:var(--red)" id="inv-atk">0</span><br>
+        DEF +<span style="color:#4488ff" id="inv-def">0</span><br>
+        HP  +<span style="color:var(--green)" id="inv-hp">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="step-tracker" id="step-tracker"></div>
+    <div id="task-list">
+      <div style="font-family:'VT323',monospace;font-size:18px;color:#446644;text-align:center;padding:20px">Loading tasks...</div>
+    </div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED</div>
+</div>
+
+<script src="../../assets/js/api.js"></script>
+<script>
+// ── Mission definitions ─────────────────────────────────────────────────
+var MISSION_DATA = [
+  {
+    idx:0, title:'OPERATION: POPUP PURGE', xp:150,
+    sub:'CLEARANCE: ALPHA // POPUP FACTORY INFILTRATION',
+    intel:'Intel confirms MALKOR\'s popup factory is located beneath the GeoCities server farm in sector 7-B. The factory generates 10,000 popup ads per minute. Your Ad-Block Cannon must be fully charged before entry.',
+    danger:'POPUP_GENERAL.EXE guards the inner chamber. His minions spawn infinitely. Do NOT let them surround you. Destroy the generator first.',
+    tasks:[
+      {title:'CHARGE THE AD-BLOCK CANNON',         desc:'Locate the charging station in the Hero Base and power up the Ad-Block Cannon to 100%. This takes 3 full charge cycles.',       action:'Hold the charge button for 10 seconds to simulate charging.',       autoDelay:8000},
+      {title:'INFILTRATE THE POPUP FACTORY',        desc:'Enter the GeoCities underground via the hidden trapdoor in Sector 7-B. Avoid the CAPTCHA guards — they cannot be defeated, only bypassed.',action:'Navigate through the CAPTCHA maze. Do not click any suspicious banners.',autoDelay:10000},
+      {title:'DESTROY THE POPUP GENERATOR',         desc:'The central generator is protected by 3 firewall layers. Each layer requires a different weapon: Ad-Block, then Broadband Blade, then Defrag Hammer.',action:'Fire your Ad-Block Cannon at the generator core three times.',         autoDelay:12000},
+      {title:'DEFEAT POPUP_GENERAL.EXE',            desc:'With the generator down, POPUP_GENERAL.EXE becomes vulnerable. Battle him 1v1 and defeat him to complete the mission.',                action:'Go to ENEMY FILES and defeat POPUP_GENERAL.EXE in battle.',             autoDelay:0, requiresBattle:'POPUP_GENERAL'},
+    ]
+  },
+  {
+    idx:1, title:'THE SACRED .ZIP FILE', xp:200,
+    sub:'CLEARANCE: BETA // ARTIFACT RETRIEVAL',
+    intel:'The Sacred .ZIP File of Destiny was last detected in a 1998 Hotmail attachment from user council_elder@hotmail.com. The file is 1.44MB — exactly one floppy disk. It contains the source code of reality.',
+    danger:'The file is password protected with 56-bit encryption. MALKOR knows the password but will not give it up without a fight. Wizard_42 is close to cracking it independently.',
+    tasks:[
+      {title:'LOCATE THE HOTMAIL ACCOUNT',          desc:'Log in to the ancient council_elder@hotmail.com account. The password is hidden in the prophecy scrolls. Check the Prophecy page for clues.',                 action:'Open the Prophecy page and find the encoded login credentials.',      autoDelay:8000},
+      {title:'RETRIEVE THE .ZIP ATTACHMENT',        desc:'The Sacred ZIP is buried under 400 unread emails about Nigerian princes and chain letters. Download it without opening any suspicious attachments.',              action:'Click through 400 emails. Do not open CHAINMAIL_WORM.EXE attachments.',autoDelay:15000},
+      {title:'CRACK THE 56-BIT PASSWORD',            desc:'Run Wizard_42\'s password cracker on the ZIP file. It will take several minutes on a 56k connection. Make sure nobody disconnects the modem.',                  action:'Wait while the cracker runs. Do not pick up the phone.',              autoDelay:20000},
+      {title:'VERIFY THE CONTENTS',                  desc:'Unzip the file and check the contents. The file should contain reality.exe, universe.cfg, and malkor_weakness.txt. All three must be present.',                 action:'Run reality.exe in a sandboxed environment only.',                   autoDelay:8000},
+      {title:'SECURE THE FILE',                      desc:'Upload the ZIP to the Council\'s secure Moon Base server using a 56k connection. This will take approximately 4 hours. Do not interrupt the transfer.',          action:'Initiate upload sequence to MOON-BASE-ALPHA/secure/destiny/',        autoDelay:12000},
+    ]
+  },
+  {
+    idx:2, title:'CRYSTAL DEFRAG', xp:175,
+    sub:'CLEARANCE: GAMMA // DEFRAGMENTATION OPERATION',
+    intel:'Seven Crystals of Knowledge were shattered by MALKOR\'s initial attack in 1998. Each shard is stored on a corrupted hard drive across 7 different countries. The Defrag Hammer of Thor is required.',
+    danger:'Each drive takes 4-6 hours to defrag. The process cannot be interrupted or the crystal shatters permanently. Keep the power on at all costs.',
+    tasks:[
+      {title:'COLLECT THE DEFRAG HAMMER',            desc:'The Defrag Hammer of Thor is stored in the Hero Armory on the Weapons page. Equip it before proceeding.',                                                        action:'Go to the Weapons page and equip the Defrag Hammer of Thor.',        autoDelay:0, requiresPage:'/weapons'},
+      {title:'LOCATE ALL 7 HARD DRIVES',             desc:'Use the World Map to identify the 7 server locations. Mark each one on your tactical display. North America, Europe, Russia, Asia, Africa, Middle East, Moon Base.',action:'Open the World Map and click each of the 7 regions.',               autoDelay:0, requiresPage:'/world'},
+      {title:'DEFRAG DRIVES 1-3',                    desc:'Begin with the North America, Europe and Russia drives. These are the least corrupted. The Defrag Hammer will auto-complete each in sequence.',                    action:'Begin defragmentation sequence on the first three drives.',          autoDelay:18000},
+      {title:'DEFRAG DRIVES 4-7',                    desc:'The remaining four drives are in active combat zones. Asia is particularly dangerous — DragonKid will provide cover while you defrag.',                           action:'Complete defragmentation under cover fire from DragonKid.',          autoDelay:18000},
+    ]
+  },
+  {
+    idx:3, title:'UNITE THE KINGDOMS', xp:300,
+    sub:'CLEARANCE: DELTA // DIPLOMATIC OPERATION',
+    intel:'Seven Internet Kingdoms have been at war over bandwidth allocation since 1997. Without unity, MALKOR will exploit the divisions and conquer them individually. You must broker peace.',
+    danger:'Napster and the RIAA faction have a violent history. Keep them separated during negotiations. Kazaa may attempt to install spyware on the peace treaty document.',
+    tasks:[
+      {title:'SCHEDULE THE PEACE SUMMIT',            desc:'Send formal invitations to all 7 kingdoms: AOL, Yahoo!, AltaVista, Napster, ICQ, Kazaa and Ask Jeeves. Use the Contact page to reach each leader.',              action:'Send a contact form message to each kingdom representative.',        autoDelay:0, requiresPage:'/contact'},
+      {title:'NEUTRALISE THE NAPSTER-RIAA CONFLICT', desc:'History shows Napster and the RIAA cannot be in the same room. Negotiate a private digital rights agreement before the summit begins.',                            action:'Draft the Digital Rights Agreement in the alliance chat.',           autoDelay:0, requiresPage:'/alliances'},
+      {title:'HOST THE BANDWIDTH SUMMIT',            desc:'Chair the summit from the Moon Base neutral territory. All 7 representatives must agree on a bandwidth allocation formula.',                                       action:'Moderate the summit. Prevent Kazaa from installing spyware.',        autoDelay:20000},
+      {title:'DRAFT THE UNITY ACCORD',               desc:'Write the Internet Unity Accord — a binding treaty committing all kingdoms to share bandwidth equally and stand against MALKOR.',                                   action:'Sign the Unity Accord on behalf of the Council of Elders.',         autoDelay:12000},
+      {title:'RATIFY THE ACCORD',                    desc:'All 7 kingdom leaders must digitally sign the accord. Ask Jeeves will need help understanding the signing process.',                                               action:'Walk Ask Jeeves through the e-signature process.',                  autoDelay:10000},
+      {title:'BROADCAST THE ALLIANCE',               desc:'Announce the Internet Unity Accord to all online users. Post it in the global alliance chat so all heroes know.',                                                  action:'Post the announcement in Alliance chat.',                           autoDelay:0, requiresPage:'/alliances'},
+    ]
+  },
+  {
+    idx:4, title:'RESTORE THE ANCIENT HOMEPAGE', xp:250,
+    sub:'CLEARANCE: EPSILON // RESTORATION OPERATION',
+    intel:'The Ancient Homepage of Light was the first webpage ever created. MALKOR corrupted it in 1997 and buried it under 400 layers of GeoCities subdomains. It must be restored to end his corruption.',
+    danger:'The homepage is encoded in an ancient dialect of HTML 1.0. Modern browsers cannot parse it without a compatibility layer. Netscape 1.0 must be emulated.',
+    tasks:[
+      {title:'LOCATE THE CORRUPTED HOMEPAGE',        desc:'Dig through 400 layers of GeoCities subdomains to find the original URL. The World Map shows the server location in the NORTH AMERICA sector.',                  action:'Search the World Map for the hidden homepage server.',               autoDelay:0, requiresPage:'/world'},
+      {title:'EMULATE NETSCAPE 1.0',                 desc:'Download and configure a Netscape 1.0 emulator from the Hero Armory. Without it, the ancient HTML cannot be rendered and the homepage stays corrupted.',           action:'Configure the Netscape emulator. Set baud rate to 56k.',             autoDelay:12000},
+      {title:'DECRYPT THE HOMEPAGE CODE',            desc:'The homepage is encrypted with the Council\'s ancient cipher. Use the key hidden in Scroll III of the Prophecy page to decrypt it.',                              action:'Open the Prophecy page and find the decryption key in Scroll III.',  autoDelay:0, requiresPage:'/prophecy'},
+      {title:'RESTORE THE HTML',                     desc:'Rewrite the corrupted HTML using the original 1.0 spec. No CSS, no JavaScript — pure semantic HTML. This is harder than it sounds in 2001.',                     action:'Write the restoration code. Use only valid HTML 1.0 tags.',         autoDelay:18000},
+      {title:'RELAUNCH THE HOMEPAGE',                desc:'Upload the restored homepage to the original server and relaunch it. When it loads successfully, a burst of white light will purge surrounding corruption.',       action:'Initiate relaunch sequence. Stand back from the monitor.',           autoDelay:10000},
+    ]
+  },
+  {
+    idx:5, title:'DEFEAT THE SHADOW WEBMASTERS', xp:100,
+    sub:'CLEARANCE: ZETA // COMBAT OPERATION',
+    intel:'The Council of Shadow Webmasters has infiltrated the chosen-one-y2k server and stolen the source code. They are using it to build a dark mirror site that spreads MALKOR propaganda.',
+    danger:'The Shadow Webmasters are skilled hackers who know every exploit in the Council\'s system. Do not underestimate them — their HTML is ancient and cursed.',
+    tasks:[
+      {title:'IDENTIFY THE SHADOW WEBMASTERS',       desc:'Scan the alliance network to identify which accounts have been compromised by the Shadow Webmasters. Check the Alliances page for suspicious activity.',          action:'Review the alliance roster for compromised accounts.',               autoDelay:0, requiresPage:'/alliances'},
+      {title:'DEFEAT THEIR CHAMPION IN BATTLE',      desc:'The Shadow Webmasters have sent MALKOR.EXE as their champion. You must defeat him in 1v1 combat to prove the Council\'s superiority.',                           action:'Go to Enemy Files and defeat MALKOR.EXE in battle.',                autoDelay:0, requiresBattle:'MALKOR'},
+      {title:'RECLAIM THE SOURCE CODE',              desc:'With their champion defeated, the Shadow Webmasters will release the stolen code. Retrieve it from their dark server before it self-destructs.',                  action:'Execute code retrieval protocol. You have 60 seconds.',             autoDelay:15000},
+    ]
+  },
+  {
+    idx:6, title:'SIGN THE GUESTBOOK', xp:50,
+    sub:'CLEARANCE: ETA // LEGENDARY TASK',
+    intel:'The Ancient Prophecy states clearly: "The Chosen signs the guestbook last, and so the age of darkness passed." This is not optional. The world literally depends on you signing the guestbook.',
+    danger:'Do not leave any fields blank. Do not rate the quest below 4 stars. The Council is watching. Elder Byte personally reviews every entry.',
+    tasks:[
+      {title:'NAVIGATE TO THE GUESTBOOK',            desc:'The Guestbook page can be found in the navigation bar. It has been waiting for your signature since 1994. Do not keep it waiting any longer.',                    action:'Open the Guestbook page.',                                          autoDelay:0, requiresPage:'/guestbook'},
+      {title:'SIGN YOUR NAME IN THE SCROLLS',        desc:'Fill in your hero name, location, a message to future heroes, and a star rating. Click SIGN GUESTBOOK. The prophecy will register your signature immediately.',  action:'Submit the guestbook form with your hero name and a message.',       autoDelay:0, requiresPage:'/guestbook'},
+    ]
+  },
+];
+
+// ── Get mission index from URL ──────────────────────────────────────────
+var params     = new URLSearchParams(window.location.search);
+var missionIdx = parseInt(params.get('m') || '0', 10);
+var MISSION    = MISSION_DATA[missionIdx] || MISSION_DATA[0];
+var completedTasks = {};
+
+// ── Render page header ─────────────────────────────────────────────────
+document.getElementById('mission-title').textContent = 'M' + (missionIdx+1) + ': ' + MISSION.title;
+document.getElementById('mission-sub').textContent   = MISSION.sub;
+document.getElementById('mission-intel').textContent  = MISSION.intel;
+document.getElementById('mission-danger').textContent = MISSION.danger;
+document.getElementById('mission-xp').textContent    = MISSION.xp;
+document.getElementById('tasks-total').textContent   = MISSION.tasks.length;
+document.title = MISSION.title + ' :: Chosen.net';
+document.querySelector('.marquee-inner').textContent  =
+  '*** ' + MISSION.title + ' *** COMPLETE ALL TASKS TO AUTO-CHECK *** XP REWARD: +' + MISSION.xp + ' ***';
+
+// ── Load task state from backend ──────────────────────────────────────
+function loadTasks() {
+  API.getMissionTasks(missionIdx).then(function(data) {
+    data.tasks.forEach(function(t) {
+      if (t.completed) completedTasks[t.task_idx] = true;
+    });
+    renderTasks();
+    updateProgress();
+  }).catch(function() {
+    renderTasks();
+    updateProgress();
+  });
+  // Inventory bonuses
+  API.getInventoryStats().then(function(d){
+    document.getElementById('inv-atk').textContent = d.atk_bonus;
+    document.getElementById('inv-def').textContent = d.def_bonus;
+    document.getElementById('inv-hp').textContent  = d.hp_bonus;
+  }).catch(function(){});
+}
+
+// ── Render tasks ──────────────────────────────────────────────────────
+function renderTasks() {
+  var list = document.getElementById('task-list');
+  list.innerHTML = '';
+
+  // Step tracker dots
+  var tracker = document.getElementById('step-tracker');
+  tracker.innerHTML = '';
+  MISSION.tasks.forEach(function(t, i) {
+    var dot = document.createElement('div');
+    dot.className = 'step-dot' + (completedTasks[i] ? ' done' : (isNextTask(i) ? ' current' : ''));
+    tracker.appendChild(dot);
+  });
+
+  MISSION.tasks.forEach(function(task, i) {
+    var done   = !!completedTasks[i];
+    var active = isNextTask(i);
+    var locked = !done && !active;
+
+    var card = document.createElement('div');
+    card.className = 'task-card' + (done ? ' done' : active ? ' active' : '');
+    card.id = 'task-card-' + i;
+
+    var actionHtml = '';
+    if (done) {
+      actionHtml = '<div class="task-done-badge">&#10003; TASK COMPLETE</div>';
+    } else if (active) {
+      if (task.requiresBattle) {
+        actionHtml = '<a href="/enemies" class="task-complete-btn" style="display:inline-block;text-decoration:none">[ GO TO ENEMY FILES ]</a>' +
+          ' <span class="task-action">Defeat '+task.requiresBattle+' in battle, then return here</span>';
+      } else if (task.requiresPage) {
+        actionHtml = '<a href="'+task.requiresPage+'" class="task-complete-btn" style="display:inline-block;text-decoration:none">[ GO TO PAGE ]</a>' +
+          ' &nbsp; <button class="task-complete-btn" onclick="completeTask('+i+',event)">[ MARK COMPLETE ]</button>';
+      } else {
+        actionHtml = '<button class="task-complete-btn" id="btn-'+i+'" onclick="beginTask('+i+',event)">[ BEGIN TASK ]</button>' +
+          ' <span class="task-timer" id="timer-'+i+'"></span>';
+      }
+    } else {
+      actionHtml = '<span style="font-family:\'VT323\',monospace;font-size:14px;color:#333">[ LOCKED — COMPLETE PREVIOUS TASK ]</span>';
+    }
+
+    card.innerHTML =
+      '<div class="task-num">TASK ' + (i+1) + ' OF ' + MISSION.tasks.length + '</div>' +
+      '<div class="task-title">' + (done ? '&#10003; ' : '') + task.title + '</div>' +
+      '<div class="task-desc">' + task.desc + '</div>' +
+      '<div class="task-action">' + task.action + '</div>' +
+      actionHtml;
+
+    list.appendChild(card);
+  });
+}
+
+function isNextTask(idx) {
+  if (completedTasks[idx]) return false;
+  // First uncompleted task is the active one
+  for (var i = 0; i < idx; i++) {
+    if (!completedTasks[i]) return false;
+  }
+  return true;
+}
+
+// ── Begin timed task ──────────────────────────────────────────────────
+var activeTimers = {};
+
+function beginTask(idx, evt) {
+  evt.target.disabled = true;
+  evt.target.textContent = '[ IN PROGRESS... ]';
+  var delay = MISSION.tasks[idx].autoDelay || 5000;
+  var timerEl = document.getElementById('timer-' + idx);
+  var remaining = Math.ceil(delay / 1000);
+
+  if (timerEl) timerEl.textContent = remaining + 's remaining...';
+  if (window.SFX) SFX.blip();
+
+  var interval = setInterval(function() {
+    remaining--;
+    if (timerEl) timerEl.textContent = remaining > 0 ? remaining + 's remaining...' : 'COMPLETE!';
+    if (remaining <= 0) clearInterval(interval);
+  }, 1000);
+
+  activeTimers[idx] = setTimeout(function() {
+    completeTask(idx, null);
+  }, delay);
+}
+
+// ── Complete a task ───────────────────────────────────────────────────
+function completeTask(idx, evt) {
+  if (evt) { evt.preventDefault(); }
+  completedTasks[idx] = true;
+  if (window.SFX) SFX.missionComplete();
+
+  // Save to backend
+  API.completeMissionTask(missionIdx, idx).then(function() {
+    renderTasks();
+    updateProgress();
+    checkAllTasksDone();
+  }).catch(function() {
+    renderTasks();
+    updateProgress();
+    checkAllTasksDone();
+  });
+}
+
+// ── Update progress bar ───────────────────────────────────────────────
+function updateProgress() {
+  var done  = Object.keys(completedTasks).length;
+  var total = MISSION.tasks.length;
+  var pct   = Math.round(done / total * 100);
+  document.getElementById('task-prog').style.width  = pct + '%';
+  document.getElementById('tasks-done').textContent = done;
+  if (done === total) {
+    document.getElementById('mission-status').textContent = 'COMPLETE!';
+    document.getElementById('mission-status').style.color = '#00ff00';
+  }
+}
+
+// ── Check if all tasks done — auto-complete the mission ───────────────
+function checkAllTasksDone() {
+  if (Object.keys(completedTasks).length < MISSION.tasks.length) return;
+
+  // All tasks done — auto-mark the mission as complete on backend
+  API.toggleMission(missionIdx).then(function() {
+    return API.getMissions();
+  }).then(function(data) {
+    var m = data.missions.find(function(x){ return x.idx === missionIdx; });
+    if (m && !m.completed) return API.toggleMission(missionIdx); // ensure it's marked complete
+  }).catch(function() {});
+
+  // Update XP
+  API.updateScore(MISSION.xp, 0).catch(function() {});
+
+  // Show completion overlay
+  setTimeout(function() {
+    document.getElementById('co-xp').textContent = '+' + MISSION.xp + ' XP EARNED';
+    document.getElementById('co-drops').innerHTML =
+      'MISSION AUTO-CHECKED ON THE MISSION PAGE<br>' +
+      'Return to see your updated progress.';
+    document.getElementById('complete-overlay').classList.add('show');
+    if (window.SFX) { SFX.missionComplete(); setTimeout(SFX.missionComplete, 600); }
+  }, 800);
+}
+
+function goToMissions()  { window.location.href = '/mission'; }
+function goToInventory() { window.location.href = '/inventory'; }
+
+loadTasks();
+</script>
+</body>
+</html>
