@@ -108,6 +108,35 @@ const API = (() => {
     return post("/events", { region, event_text: eventText });
   }
 
+  // ── Inventory ──────────────────────────────────────────────────────────
+  async function getInventory() {
+    return get(`/inventory/${getSessionId()}`);
+  }
+  async function rollEnemyDrops(enemyKey) {
+    return post(`/inventory/${getSessionId()}/drop/${enemyKey}`, { enemy_key: enemyKey });
+  }
+  async function equipItem(itemId, equip = true) {
+    return post(`/inventory/${getSessionId()}/equip/${itemId}`, { equip });
+  }
+  async function removeItem(itemId) {
+    const sid = getSessionId();
+    const res = await fetch(BASE + `/inventory/${sid}/remove/${itemId}`, {
+      method: "DELETE", headers: { "Content-Type": "application/json" }
+    });
+    return res.json();
+  }
+  async function getInventoryStats() {
+    return get(`/inventory/${getSessionId()}/stats`);
+  }
+
+  // ── Mission tasks ──────────────────────────────────────────────────────
+  async function getMissionTasks(missionIdx) {
+    return get(`/missions/${getSessionId()}/tasks/${missionIdx}`);
+  }
+  async function completeMissionTask(missionIdx, taskIdx) {
+    return post(`/missions/${getSessionId()}/tasks/${missionIdx}/${taskIdx}`, {});
+  }
+
   // ── Health ─────────────────────────────────────────────────────────────
   async function health() { return get("/health"); }
 
@@ -129,6 +158,13 @@ const API = (() => {
     updateScore,
     getEvents,
     postEvent,
+    getInventory,
+    rollEnemyDrops,
+    equipItem,
+    removeItem,
+    getInventoryStats,
+    getMissionTasks,
+    completeMissionTask,
     health,
   };
 })();
