@@ -52,6 +52,14 @@
       "dest": "frontend/pages/contact.html"
     },
     {
+      "src": "/inventory",
+      "dest": "frontend/pages/inventory.html"
+    },
+    {
+      "src": "/mission-task",
+      "dest": "frontend/pages/mission-task.html"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "frontend/assets/$1"
     },
