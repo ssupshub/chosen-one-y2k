@@ -170,6 +170,7 @@ HERO</div>
   <a href="/prophecy">[PROPHECY]</a>
   <a href="/enemies" class="active">[ENEMY FILES]</a>
   <a href="/weapons">[WEAPONS]</a>
+  <a href="/inventory">[INVENTORY]</a>
   <a href="/alliances">[ALLIANCES]</a>
   <a href="/world">[WORLD MAP]</a>
   <a href="/guestbook">[GUESTBOOK]</a>
@@ -598,6 +599,19 @@ function battleWin(){
     document.getElementById('killcount').textContent=kills;
     API.postEvent('BATTLEFIELD',BS.enemy.name+' defeated by '+API.getHeroName()).catch(function(){});
     API.updateScore(totalXP,kills).catch(function(){});
+    // Roll for item drops
+    API.rollEnemyDrops(BS.enemyKey).then(function(data){
+      if(data.drops && data.drops.length){
+        var names = data.drops.map(function(d){
+          var col = d.rarity==='legendary'?'#ff8800':d.rarity==='rare'?'#aa44ff':d.rarity==='uncommon'?'#4488ff':'#aaaaaa';
+          return '<span style="color:'+col+'">'+d.item_name+'</span>';
+        }).join(', ');
+        var dropEl = document.createElement('div');
+        dropEl.style.cssText='font-family:VT323,monospace;font-size:17px;color:#ffff00;text-align:center;margin-top:8px;padding:6px;border:1px solid #884400;background:#110800';
+        dropEl.innerHTML='ITEM DROP! '+names;
+        document.getElementById('result-stats').appendChild(dropEl);
+      }
+    }).catch(function(){});
     setTimeout(function(){document.getElementById('battle-result').style.display='flex';},900);
   });
 }
