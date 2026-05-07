@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>INVENTORY :: Chosen.net</title>
+<link rel="stylesheet" href="../../assets/css/style.css">
+<script src="../../assets/js/sounds.js"></script>
+<script src="../../assets/js/hero-setup.js"></script>
+<style>
+/* ── Rarity colours ─────────────────────────────────────────────────── */
+.rarity-legendary { color:#ff8800; text-shadow:0 0 8px #ff8800 }
+.rarity-rare      { color:#aa44ff }
+.rarity-uncommon  { color:#4488ff }
+.rarity-common    { color:#aaaaaa }
+
+/* ── Item card ──────────────────────────────────────────────────────── */
+.item-card {
+  border:2px solid #222;
+  background:#080808;
+  padding:12px;
+  margin-bottom:8px;
+  display:grid;
+  grid-template-columns:56px 1fr auto;
+  gap:12px;
+  align-items:start;
+  transition:border-color 0.15s;
+  position:relative;
+}
+.item-card:hover           { border-color:#444 }
+.item-card.equipped        { border-color:#886600;background:#0a0800 }
+.item-card.legendary-card  { border-color:#884400;background:#080400 }
+.item-card.rare-card       { border-color:#441188;background:#050010 }
+.item-card.uncommon-card   { border-color:#113388;background:#000510 }
+
+.item-icon {
+  width:52px;height:52px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid #333;background:#000;
+  font-size:24px;flex-shrink:0;
+}
+.item-name  { font-family:'VT323',monospace;font-size:20px;letter-spacing:1px;margin-bottom:2px }
+.item-type  { font-family:'VT323',monospace;font-size:13px;color:#555;margin-bottom:4px }
+.item-desc  { font-family:'VT323',monospace;font-size:15px;color:#666;line-height:1.4;margin-bottom:6px }
+.item-stats { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px }
+.item-stat  {
+  font-family:'VT323',monospace;font-size:14px;
+  padding:1px 6px;border:1px solid;display:inline-block;
+}
+.stat-atk  { color:#ff6644;border-color:#882200;background:#110500 }
+.stat-def  { color:#4488ff;border-color:#224488;background:#000a22 }
+.stat-hp   { color:#44cc44;border-color:#226622;background:#001100 }
+.item-source { font-family:'VT323',monospace;font-size:13px;color:#333;margin-bottom:6px }
+.equipped-badge {
+  position:absolute;top:8px;right:8px;
+  font-family:'VT323',monospace;font-size:13px;
+  color:#ffaa00;border:1px solid #884400;
+  background:#110800;padding:1px 6px;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+.item-btns   { display:flex;flex-direction:column;gap:4px;flex-shrink:0;min-width:90px }
+.item-btn    {
+  font-family:'VT323',monospace;font-size:14px;letter-spacing:1px;
+  padding:5px 8px;border:1px solid;cursor:pointer;
+  background:#000;transition:all 0.1s;white-space:nowrap;
+}
+.btn-equip   { color:#ffaa00;border-color:#884400 }
+.btn-equip:hover  { background:#331100;color:#ffcc00 }
+.btn-unequip { color:#4488ff;border-color:#224488 }
+.btn-unequip:hover{ background:#001133;color:#88aaff }
+.btn-drop    { color:#ff4444;border-color:#882222 }
+.btn-drop:hover   { background:#220000;color:#ff6666 }
+
+/* ── Stat summary panel ─────────────────────────────────────────────── */
+.stat-bar-row  { margin-bottom:8px }
+.stat-bar-label{ font-family:'VT323',monospace;font-size:15px;color:#888;margin-bottom:2px }
+.stat-bar-track{ height:14px;background:#111;border:1px solid #333;overflow:hidden }
+.stat-bar-fill { height:100%;transition:width 0.5s ease }
+
+/* ── Filter tabs ────────────────────────────────────────────────────── */
+.filter-tabs  { display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px }
+.filter-tab   {
+  font-family:'VT323',monospace;font-size:15px;
+  padding:3px 12px;border:1px solid #333;
+  background:#000;color:#666;cursor:pointer;
+}
+.filter-tab.active { background:#001133;color:#4488ff;border-color:#4488ff }
+
+/* ── Empty state ────────────────────────────────────────────────────── */
+.empty-inv {
+  font-family:'VT323',monospace;font-size:18px;color:#333;
+  text-align:center;padding:40px 20px;border:1px dashed #222;
+}
+
+/* ── Drop notification ──────────────────────────────────────────────── */
+.drop-toast {
+  position:fixed;bottom:20px;right:20px;
+  background:#0a0800;border:2px solid #884400;
+  padding:12px 16px;z-index:9999;
+  font-family:'VT323',monospace;font-size:16px;color:var(--yellow);
+  animation:fadein 0.3s ease;max-width:280px;
+}
+.drop-toast.hide { animation:fadeout 0.5s ease forwards }
+@keyframes fadeout { to { opacity:0;transform:translateY(20px) } }
+
+/* ── Confirm drop modal ─────────────────────────────────────────────── */
+#drop-modal {
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.9);z-index:99999;
+  align-items:center;justify-content:center;
+}
+#drop-modal.show { display:flex }
+.drop-modal-box {
+  border:2px solid var(--red);background:#0d0000;
+  padding:24px;max-width:360px;text-align:center;
+}
+</style>
+</head>
+<body>
+
+<!-- Drop confirm modal -->
+<div id="drop-modal">
+  <div class="drop-modal-box">
+    <div style="font-family:'VT323',monospace;font-size:22px;color:var(--red);margin-bottom:8px">::: DROP ITEM? :::</div>
+    <div style="font-family:'VT323',monospace;font-size:17px;color:#888;margin-bottom:16px" id="drop-modal-name">Are you sure?</div>
+    <div style="font-family:'VT323',monospace;font-size:15px;color:#554444;margin-bottom:16px">This is permanent. The item will be lost forever.</div>
+    <button class="btn btn-red" onclick="confirmDrop()" style="margin-right:8px">[ DROP IT ]</button>
+    <button class="btn" onclick="cancelDrop()">[ KEEP IT ]</button>
+  </div>
+</div>
+
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** HERO INVENTORY *** ITEMS DROPPED BY DEFEATED ENEMIES *** EQUIP TO GAIN STAT BONUSES *** DEFEAT ENEMIES TO COLLECT MORE ***</div>
+</div>
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="/">[HOME]</a>
+  <a href="/mission">[MISSION]</a>
+  <a href="/prophecy">[PROPHECY]</a>
+  <a href="/enemies">[ENEMY FILES]</a>
+  <a href="/weapons">[WEAPONS]</a>
+  <a href="/inventory">[INVENTORY]</a>
+  <a href="/alliances">[ALLIANCES]</a>
+  <a href="/world">[WORLD MAP]</a>
+  <a href="/guestbook">[GUESTBOOK]</a>
+  <a href="/contact">[CONTACT]</a>
+</nav>
+
+<div class="page-header">
+  <h1>::: HERO INVENTORY :::</h1>
+  <div class="sub">ITEMS DROPPED BY DEFEATED ENEMIES // EQUIP FOR STAT BONUSES // MAX 1 PER TYPE EQUIPPED</div>
+</div>
+
+<div class="three-col">
+
+  <!-- LEFT SIDEBAR -->
+  <div style="display:flex;flex-direction:column;gap:8px">
+
+    <div class="panel panel-orange">
+      <div class="panel-title" style="color:var(--orange)">::: EQUIPPED STATS :::</div>
+      <div class="stat-bar-row">
+        <div class="stat-bar-label">ATTACK BONUS</div>
+        <div class="stat-bar-track"><div class="stat-bar-fill" id="atk-bar" style="width:0%;background:linear-gradient(90deg,#882200,#ff4400)"></div></div>
+        <div style="font-family:'VT323',monospace;font-size:13px;color:#ff6644">+<span id="atk-val">0</span></div>
+      </div>
+      <div class="stat-bar-row">
+        <div class="stat-bar-label">DEFENSE BONUS</div>
+        <div class="stat-bar-track"><div class="stat-bar-fill" id="def-bar" style="width:0%;background:linear-gradient(90deg,#113388,#4488ff)"></div></div>
+        <div style="font-family:'VT323',monospace;font-size:13px;color:#4488ff">+<span id="def-val">0</span></div>
+      </div>
+      <div class="stat-bar-row">
+        <div class="stat-bar-label">HP BONUS</div>
+        <div class="stat-bar-track"><div class="stat-bar-fill" id="hp-bar" style="width:0%;background:linear-gradient(90deg,#115511,#44cc44)"></div></div>
+        <div style="font-family:'VT323',monospace;font-size:13px;color:#44cc44">+<span id="hp-val">0</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: INVENTORY :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#aaaaaa;line-height:2">
+        TOTAL ITEMS: <span style="color:var(--yellow)" id="total-items">0</span><br>
+        EQUIPPED: <span style="color:var(--yellow)" id="equipped-count">0</span><br>
+        LEGENDARY: <span style="color:#ff8800" id="legendary-count">0</span><br>
+        RARE: <span style="color:#aa44ff" id="rare-count">0</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: RARITY :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;line-height:2">
+        <span class="rarity-legendary">■ LEGENDARY</span><br>
+        <span class="rarity-rare">■ RARE</span><br>
+        <span class="rarity-uncommon">■ UNCOMMON</span><br>
+        <span class="rarity-common">■ COMMON</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: SLOT RULES :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#555;line-height:1.8">
+        WEAPON: 1 equipped max<br>
+        ARMOR: 1 equipped max<br>
+        ACCESSORY: 1 equipped max<br>
+        RELIC: 1 equipped max<br><br>
+        <span style="color:#333">Equipping a new item of the same type unequips the old one.</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: GET MORE ITEMS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#555;line-height:1.8;margin-bottom:8px">
+        Defeat enemies in the Enemy Files to collect item drops. Higher rarity enemies drop better loot.
+      </div>
+      <a href="/enemies" class="btn btn-red" style="display:block;text-align:center;font-size:12px;padding:6px;text-decoration:none">[ FIGHT ENEMIES ]</a>
+    </div>
+
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div style="grid-column:span 2">
+
+    <div class="filter-tabs" id="filter-tabs">
+      <button class="filter-tab active" onclick="setFilter('all',this)">ALL</button>
+      <button class="filter-tab" onclick="setFilter('equipped',this)">EQUIPPED</button>
+      <button class="filter-tab" onclick="setFilter('weapon',this)">WEAPONS</button>
+      <button class="filter-tab" onclick="setFilter('armor',this)">ARMOR</button>
+      <button class="filter-tab" onclick="setFilter('accessory',this)">ACCESSORIES</button>
+      <button class="filter-tab" onclick="setFilter('relic',this)">RELICS</button>
+      <button class="filter-tab" onclick="setFilter('legendary',this)">LEGENDARY</button>
+    </div>
+
+    <div id="item-list">
+      <div class="empty-inv">Loading inventory...</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED</div>
+  <div class="webring">&lt;&lt; PREV | [HERO WEBRING] | NEXT &gt;&gt;</div>
+</div>
+
+<script src="../../assets/js/api.js"></script>
+<script>
+var allItems    = [];
+var currentFilter = 'all';
+var pendingDrop   = null;  // item_id pending drop confirmation
+
+// ── Item type icons ────────────────────────────────────────────────────
+var TYPE_ICONS = {
+  weapon:'⚔️', armor:'🛡️', accessory:'💍', relic:'✨'
+};
+
+// ── Load inventory ────────────────────────────────────────────────────
+function loadInventory() {
+  API.getInventory().then(function(data) {
+    allItems = data.items;
+    renderItems();
+    updateSidebar();
+  }).catch(function() {
+    document.getElementById('item-list').innerHTML =
+      '<div class="empty-inv">BACKEND OFFLINE — cannot load inventory.<br>Start the backend and refresh.</div>';
+  });
+
+  API.getInventoryStats().then(function(d) {
+    document.getElementById('atk-val').textContent = d.atk_bonus;
+    document.getElementById('def-val').textContent = d.def_bonus;
+    document.getElementById('hp-val').textContent  = d.hp_bonus;
+    document.getElementById('atk-bar').style.width = Math.min(d.atk_bonus * 2, 100) + '%';
+    document.getElementById('def-bar').style.width = Math.min(d.def_bonus * 2, 100) + '%';
+    document.getElementById('hp-bar').style.width  = Math.min(d.hp_bonus  * 2, 100) + '%';
+    document.getElementById('equipped-count').textContent = d.equipped_count;
+  }).catch(function(){});
+}
+
+// ── Sidebar counts ────────────────────────────────────────────────────
+function updateSidebar() {
+  document.getElementById('total-items').textContent    = allItems.length;
+  document.getElementById('legendary-count').textContent = allItems.filter(function(i){return i.rarity==='legendary';}).length;
+  document.getElementById('rare-count').textContent      = allItems.filter(function(i){return i.rarity==='rare';}).length;
+  document.getElementById('equipped-count').textContent  = allItems.filter(function(i){return i.equipped;}).length;
+}
+
+// ── Filter ────────────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  renderItems();
+}
+
+function filteredItems() {
+  return allItems.filter(function(item) {
+    if (currentFilter === 'all')       return true;
+    if (currentFilter === 'equipped')  return !!item.equipped;
+    if (currentFilter === 'legendary') return item.rarity === 'legendary';
+    return item.item_type === currentFilter;
+  });
+}
+
+// ── Render item cards ─────────────────────────────────────────────────
+function renderItems() {
+  var list  = document.getElementById('item-list');
+  var items = filteredItems();
+
+  if (!items.length) {
+    var msg = allItems.length === 0
+      ? 'YOUR INVENTORY IS EMPTY.<br>Defeat enemies to collect item drops.'
+      : 'NO ITEMS MATCH THIS FILTER.';
+    list.innerHTML = '<div class="empty-inv">' + msg + '</div>';
+    return;
+  }
+
+  // Sort: equipped first, then by rarity
+  var rarityOrder = {legendary:0,rare:1,uncommon:2,common:3};
+  items.sort(function(a,b){
+    if (a.equipped !== b.equipped) return b.equipped - a.equipped;
+    return (rarityOrder[a.rarity]||3) - (rarityOrder[b.rarity]||3);
+  });
+
+  list.innerHTML = '';
+  items.forEach(function(item) {
+    var card = document.createElement('div');
+    var r    = item.rarity || 'common';
+    var rarityCard = r==='legendary'?'legendary-card':r==='rare'?'rare-card':r==='uncommon'?'uncommon-card':'';
+    card.className = 'item-card ' + rarityCard + (item.equipped?' equipped':'');
+    card.id = 'item-' + item.item_id;
+
+    var statsHtml = '';
+    if (item.atk_bonus > 0) statsHtml += '<span class="item-stat stat-atk">ATK +'+item.atk_bonus+'</span>';
+    if (item.def_bonus > 0) statsHtml += '<span class="item-stat stat-def">DEF +'+item.def_bonus+'</span>';
+    if (item.hp_bonus  > 0) statsHtml += '<span class="item-stat stat-hp">HP +'+item.hp_bonus+'</span>';
+
+    var equipBtn = item.equipped
+      ? '<button class="item-btn btn-unequip" onclick="doUnequip(\''+item.item_id+'\')">[ UNEQUIP ]</button>'
+      : '<button class="item-btn btn-equip"   onclick="doEquip(\''+item.item_id+'\')">[ EQUIP ]</button>';
+
+    card.innerHTML =
+      (item.equipped ? '<div class="equipped-badge">EQUIPPED</div>' : '') +
+      '<div class="item-icon">'+(TYPE_ICONS[item.item_type]||'📦')+'</div>' +
+      '<div>' +
+        '<div class="item-name rarity-'+r+'">'+item.item_name+'</div>' +
+        '<div class="item-type">['+item.item_type.toUpperCase()+'] ['+r.toUpperCase()+']</div>' +
+        '<div class="item-desc">'+item.description+'</div>' +
+        (statsHtml ? '<div class="item-stats">'+statsHtml+'</div>' : '') +
+        '<div class="item-source">Dropped by: '+(item.dropped_by||'Unknown')+'</div>' +
+      '</div>' +
+      '<div class="item-btns">' +
+        equipBtn +
+        '<button class="item-btn btn-drop" onclick="initDrop(\''+item.item_id+'\',\''+item.item_name.replace(/'/g,"\\'")+'\')">[  DROP  ]</button>' +
+      '</div>';
+
+    list.appendChild(card);
+  });
+}
+
+// ── Equip / Unequip ───────────────────────────────────────────────────
+function doEquip(itemId) {
+  if (window.SFX) SFX.equip();
+  API.equipItem(itemId, true).then(function() {
+    showToast('ITEM EQUIPPED!', '#ffaa00');
+    loadInventory();
+  }).catch(function() {
+    showToast('FAILED TO EQUIP — backend offline?', '#ff4444');
+  });
+}
+
+function doUnequip(itemId) {
+  if (window.SFX) SFX.blip();
+  API.equipItem(itemId, false).then(function() {
+    showToast('ITEM UNEQUIPPED.', '#4488ff');
+    loadInventory();
+  }).catch(function() {
+    showToast('FAILED — backend offline?', '#ff4444');
+  });
+}
+
+// ── Drop item ─────────────────────────────────────────────────────────
+function initDrop(itemId, itemName) {
+  pendingDrop = itemId;
+  document.getElementById('drop-modal-name').textContent = '"' + itemName + '"';
+  document.getElementById('drop-modal').classList.add('show');
+  if (window.SFX) SFX.bloop();
+}
+
+function confirmDrop() {
+  if (!pendingDrop) return;
+  document.getElementById('drop-modal').classList.remove('show');
+  API.removeItem(pendingDrop).then(function() {
+    showToast('ITEM DROPPED AND LOST FOREVER.', '#ff4444');
+    pendingDrop = null;
+    loadInventory();
+  }).catch(function() {
+    showToast('FAILED — backend offline?', '#ff4444');
+    pendingDrop = null;
+  });
+}
+
+function cancelDrop() {
+  pendingDrop = null;
+  document.getElementById('drop-modal').classList.remove('show');
+}
+
+// ── Toast notification ────────────────────────────────────────────────
+var toastTimer = null;
+function showToast(msg, color) {
+  var existing = document.querySelector('.drop-toast');
+  if (existing) existing.remove();
+  var toast = document.createElement('div');
+  toast.className = 'drop-toast';
+  toast.style.borderColor = color || '#884400';
+  toast.style.color       = color || var_yellow();
+  toast.textContent       = msg;
+  document.body.appendChild(toast);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() {
+    toast.classList.add('hide');
+    setTimeout(function(){ if(toast.parentNode) toast.remove(); }, 600);
+  }, 2800);
+}
+function var_yellow(){ return '#ffff00'; }
+
+// ── Init ──────────────────────────────────────────────────────────────
+loadInventory();
+</script>
+</body>
+</html>
