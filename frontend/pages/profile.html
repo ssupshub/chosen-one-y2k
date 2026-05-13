@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HERO PROFILE :: Chosen.net</title>
+<link rel="stylesheet" href="../../assets/css/style.css">
+<script src="../../assets/js/sounds.js"></script>
+<script src="../../assets/js/hero-setup.js"></script>
+<style>
+/* ── Hero card ─────────────────────────────────────────────────────── */
+#hero-card{
+  border:3px double var(--green);background:#000a00;
+  padding:20px;text-align:center;position:relative;
+  margin-bottom:10px;
+}
+.hero-card-name{font-family:'Press Start 2P',monospace;font-size:18px;color:var(--green);letter-spacing:2px;text-shadow:0 0 12px var(--green);margin-bottom:6px}
+.hero-card-title{font-family:'VT323',monospace;font-size:20px;color:var(--yellow);letter-spacing:3px;margin-bottom:12px}
+.hero-sprite-big{white-space:pre;font-family:'Courier Prime',monospace;font-size:13px;line-height:1.2;color:var(--green);display:inline-block;margin-bottom:12px}
+.hero-card-level{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--yellow);margin-bottom:8px}
+.ng-badge{font-family:'VT323',monospace;font-size:18px;color:#ff8800;border:1px solid #884400;background:#0a0500;padding:3px 12px;display:inline-block;margin-bottom:8px}
+.card-stat-row{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:8px}
+.card-stat{font-family:'VT323',monospace;font-size:18px;text-align:center}
+.card-stat .val{font-size:28px;display:block;font-family:'Press Start 2P',monospace}
+.card-stat .lbl{font-size:13px;color:#555}
+/* ── Stat rows ──────────────────────────────────────────────────────── */
+.stat-row{display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0;border-bottom:1px dotted #111;font-family:'VT323',monospace;font-size:17px}
+.stat-row .label{color:#555}
+.stat-row .value{color:var(--yellow)}
+.stat-row .value.green{color:var(--green)}
+.stat-row .value.red{color:var(--red)}
+.stat-row .value.blue{color:#4488ff}
+.stat-row .value.orange{color:#ff8800}
+/* ── Battle history ──────────────────────────────────────────────────── */
+.history-row{display:grid;grid-template-columns:120px 1fr 60px 60px 60px;
+  gap:6px;align-items:center;padding:5px 0;border-bottom:1px dotted #111}
+.history-row.win  .result{color:var(--green)}
+.history-row.lose .result{color:var(--red)}
+.history-row .result{font-family:'VT323',monospace;font-size:15px;font-weight:bold}
+.history-row .enemy{font-family:'VT323',monospace;font-size:15px;color:#888}
+.history-row .num {font-family:'VT323',monospace;font-size:14px;color:#555;text-align:center}
+.history-row .perfect-badge{font-family:'VT323',monospace;font-size:12px;color:#ffaa00;
+  border:1px solid #664400;background:#0a0600;padding:1px 4px;display:inline-block}
+/* ── Equipped items preview ───────────────────────────────────────────── */
+.equip-slot{border:1px solid #222;background:#050505;padding:8px;margin-bottom:6px;
+  font-family:'VT323',monospace}
+.equip-slot.filled{border-color:#553300;background:#080500}
+.equip-slot-type{font-size:13px;color:#444;margin-bottom:2px}
+.equip-slot-name{font-size:16px;color:#aa8800}
+.equip-slot-stats{font-size:13px;color:#555}
+/* ── NG+ ring ────────────────────────────────────────────────────────── */
+.ng-ring{text-align:center;padding:10px}
+.ng-ring .ng-num{font-family:'Press Start 2P',monospace;font-size:30px;color:#ff8800;display:block}
+.ng-ring .ng-lbl{font-family:'VT323',monospace;font-size:16px;color:#664400}
+.ng-progress-dots{display:flex;gap:6px;justify-content:center;margin-top:8px}
+.ng-dot{width:16px;height:16px;border-radius:50%;border:2px solid #333;background:#111}
+.ng-dot.done{background:#ff8800;border-color:#ff8800}
+/* ── Share card ──────────────────────────────────────────────────────── */
+#share-btn{width:100%;font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** HERO PROFILE *** YOUR COMPLETE STATS AND HISTORY *** NG+ PROGRESS *** BATTLE RECORD ***</div>
+</div>
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="/">[HOME]</a>
+  <a href="/mission">[MISSION]</a>
+  <a href="/prophecy">[PROPHECY]</a>
+  <a href="/enemies">[ENEMY FILES]</a>
+  <a href="/weapons">[WEAPONS]</a>
+  <a href="/inventory">[INVENTORY]</a>
+  <a href="/achievements">[ACHIEVEMENTS]</a>
+  <a href="/profile" class="active">[PROFILE]</a>
+  <a href="/alliances">[ALLIANCES]</a>
+  <a href="/world">[WORLD MAP]</a>
+  <a href="/guestbook">[GUESTBOOK]</a>
+  <a href="/contact">[CONTACT]</a>
+</nav>
+<div class="page-header">
+  <h1 style="color:var(--green)">::: HERO PROFILE :::</h1>
+  <div class="sub">YOUR COMPLETE STATS // BATTLE HISTORY // NG+ PROGRESS</div>
+</div>
+
+<div class="three-col">
+
+  <!-- LEFT: Hero card + NG+ -->
+  <div style="display:flex;flex-direction:column;gap:8px">
+
+    <div id="hero-card">
+      <div class="hero-card-name" id="card-name">LOADING...</div>
+      <div class="hero-card-title" id="card-title">THE CHOSEN ONE</div>
+      <div class="hero-sprite-big" id="card-sprite">
+   O
+  /|\
+  / \
+HERO</div>
+      <div id="ng-badge-wrap"></div>
+      <div class="hero-card-level">LVL <span id="card-level">1</span> &nbsp;|&nbsp; <span id="card-xp">0</span> XP</div>
+      <div class="card-stat-row">
+        <div class="card-stat"><span class="val" id="card-kills" style="color:var(--red)">0</span><span class="lbl">KILLS</span></div>
+        <div class="card-stat"><span class="val" id="card-wins" style="color:var(--green)">0</span><span class="lbl">WINS</span></div>
+        <div class="card-stat"><span class="val" id="card-winrate" style="color:var(--yellow)">0%</span><span class="lbl">WIN RATE</span></div>
+      </div>
+    </div>
+
+    <div class="panel panel-orange">
+      <div class="panel-title" style="color:#ff8800">::: NEW GAME+ :::</div>
+      <div class="ng-ring">
+        <span class="ng-num" id="ng-level">0</span>
+        <span class="ng-lbl">NG+ LEVEL</span>
+      </div>
+      <div class="ng-progress-dots" id="ng-dots"></div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#664400;text-align:center;margin-top:8px" id="ng-status">Defeat all 5 enemies to trigger NG+</div>
+      <div class="prog-wrap" style="margin-top:8px">
+        <div class="prog-label">ENEMIES DEFEATED THIS CYCLE</div>
+        <div class="prog-bar"><div class="prog-fill" id="ng-prog" style="width:0%;background:linear-gradient(90deg,#882200,#ff8800);transition:width 0.5s"></div></div>
+      </div>
+      <div style="font-family:'VT323',monospace;font-size:13px;color:#553300;text-align:center;margin-top:4px" id="ng-enemies-text">0 / 5 enemies defeated</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: EQUIPPED GEAR :::</div>
+      <div id="equipped-slots">
+        <div class="equip-slot"><div class="equip-slot-type">WEAPON</div><div class="equip-slot-name" style="color:#444">[ EMPTY ]</div></div>
+        <div class="equip-slot"><div class="equip-slot-type">ARMOR</div><div class="equip-slot-name" style="color:#444">[ EMPTY ]</div></div>
+        <div class="equip-slot"><div class="equip-slot-type">ACCESSORY</div><div class="equip-slot-name" style="color:#444">[ EMPTY ]</div></div>
+        <div class="equip-slot"><div class="equip-slot-type">RELIC</div><div class="equip-slot-name" style="color:#444">[ EMPTY ]</div></div>
+      </div>
+      <a href="/inventory" class="btn btn-blue" style="display:block;text-align:center;text-decoration:none;font-size:12px;padding:5px;margin-top:6px">[ MANAGE INVENTORY ]</a>
+    </div>
+
+    <div class="panel">
+      <button class="btn" id="share-btn" onclick="shareCard()">[ COPY HERO CARD TEXT ]</button>
+    </div>
+
+  </div>
+
+  <!-- CENTRE: Stats + history -->
+  <div style="display:flex;flex-direction:column;gap:8px">
+
+    <div class="panel">
+      <div class="panel-title">::: COMBAT STATS :::</div>
+      <div id="combat-stats">
+        <div class="stat-row"><span class="label">TOTAL BATTLES</span><span class="value" id="s-battles">0</span></div>
+        <div class="stat-row"><span class="label">BATTLES WON</span><span class="value green" id="s-won">0</span></div>
+        <div class="stat-row"><span class="label">BATTLES LOST</span><span class="value red" id="s-lost">0</span></div>
+        <div class="stat-row"><span class="label">PERFECT WINS</span><span class="value" style="color:#ffaa00" id="s-perfect">0</span></div>
+        <div class="stat-row"><span class="label">TOTAL DAMAGE DEALT</span><span class="value" id="s-damage">0</span></div>
+        <div class="stat-row"><span class="label">WIN RATE</span><span class="value green" id="s-winrate">0%</span></div>
+        <div class="stat-row"><span class="label">CURRENT XP</span><span class="value orange" id="s-xp">0</span></div>
+        <div class="stat-row"><span class="label">TOTAL KILLS</span><span class="value red" id="s-kills">0</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: MISSION PROGRESS :::</div>
+      <div id="mission-stats">
+        <div class="stat-row"><span class="label">MISSIONS COMPLETE</span><span class="value green" id="s-missions">0 / 7</span></div>
+      </div>
+      <div class="prog-wrap" style="margin-top:6px">
+        <div class="prog-bar"><div class="prog-fill" id="mission-prog" style="width:0%;transition:width 0.5s"></div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: ACHIEVEMENTS :::</div>
+      <div class="stat-row"><span class="label">UNLOCKED</span><span class="value orange" id="s-ach">0 / 19</span></div>
+      <div class="stat-row"><span class="label">ACHIEVEMENT XP</span><span class="value" style="color:var(--yellow)" id="s-ach-xp">0</span></div>
+      <div class="prog-wrap" style="margin-top:6px">
+        <div class="prog-bar"><div class="prog-fill amber" id="ach-prog" style="width:0%;transition:width 0.5s"></div></div>
+      </div>
+      <a href="/achievements" class="btn" style="display:block;text-align:center;text-decoration:none;font-size:12px;padding:5px;margin-top:8px">[ VIEW ALL ACHIEVEMENTS ]</a>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: INVENTORY BONUSES :::</div>
+      <div class="stat-row"><span class="label">ITEMS COLLECTED</span><span class="value" id="s-inv">0</span></div>
+      <div class="stat-row"><span class="label">ATK BONUS</span><span class="value red" id="s-atk">+0</span></div>
+      <div class="stat-row"><span class="label">DEF BONUS</span><span class="value blue" id="s-def">+0</span></div>
+      <div class="stat-row"><span class="label">HP BONUS</span><span class="value green" id="s-hp">+0</span></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: RECENT BATTLE HISTORY :::</div>
+      <div style="font-family:'VT323',monospace;font-size:12px;color:#333;display:grid;grid-template-columns:120px 1fr 60px 60px 60px;gap:6px;padding:4px 0;border-bottom:1px solid #111">
+        <span>ENEMY</span><span>DATE</span><span style="text-align:center">RESULT</span><span style="text-align:center">DMG</span><span style="text-align:center">TURNS</span>
+      </div>
+      <div id="battle-history">
+        <div style="font-family:'VT323',monospace;font-size:16px;color:#333;padding:10px 0;text-align:center">No battles recorded yet.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: Enemy respawn status -->
+  <div style="display:flex;flex-direction:column;gap:8px">
+
+    <div class="panel panel-red">
+      <div class="panel-title" style="color:var(--red)">::: ENEMY STATUS :::</div>
+      <div id="respawn-list" style="font-family:'VT323',monospace;font-size:14px;line-height:2">
+        Loading...
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: SESSION INFO :::</div>
+      <div style="font-family:'VT323',monospace;font-size:13px;color:#444;word-break:break-all;line-height:1.6">
+        SESSION ID:<br>
+        <span style="color:#336633;font-size:12px" id="session-display">...</span>
+        <br><br>
+        <span style="color:#333;font-size:12px">Progress is tied to this session ID stored in your browser. Clearing localStorage resets everything.</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">::: RANK :::</div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:13px;color:var(--yellow);text-align:center;padding:8px" id="hero-rank-display">NOVICE</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#555;text-align:center" id="rank-progress">Complete more missions to rank up</div>
+    </div>
+
+    <div class="panel panel-cyan">
+      <div class="panel-title" style="color:var(--cyan)">::: QUICK ACTIONS :::</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <a href="/enemies" class="btn btn-red" style="display:block;text-align:center;text-decoration:none;font-size:12px;padding:6px">[ BATTLE ENEMIES ]</a>
+        <a href="/mission" class="btn btn-blue" style="display:block;text-align:center;text-decoration:none;font-size:12px;padding:6px">[ MISSIONS ]</a>
+        <a href="/achievements" class="btn" style="display:block;text-align:center;text-decoration:none;font-size:12px;padding:6px;background:var(--yellow);color:#000">[ ACHIEVEMENTS ]</a>
+        <a href="/inventory" class="btn btn-green" style="display:block;text-align:center;text-decoration:none;font-size:12px;padding:6px">[ INVENTORY ]</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED</div>
+</div>
+
+<script src="../../assets/js/api.js"></script>
+<script>
+var RANKS   = ['NOVICE','ROOKIE','FIGHTER','WARRIOR','VETERAN','CHAMPION','LEGEND','THE CHOSEN ONE'];
+var SPRITES = [
+  "   O\n  /|\\\n  / \\\nNOVICE",
+  "   O\n  /|\\\n  / \\\nROOKIE",
+  "  \\O/\n   |\n  / \\\nFIGHTER",
+  "  \\O/\n  _|\n  / \\\nWARRIOR",
+  "  \\O/\n  _|_\n  / \\\nVETERAN",
+  "  \\O/\n  [|]\n  / \\\nCHAMPION",
+  "  \\O/\n  [|]\n  /|\\\n LEGEND",
+  "  \\@/\n  [|]\n  /|\\\nCHOSEN!!"
+];
+
+var profileData = {};
+
+function loadProfile(){
+  var sid = API.getSessionId();
+  document.getElementById('session-display').textContent = sid;
+
+  Promise.all([
+    API.getProfile(),
+    API.getAchievements(),
+    API.getRespawnStatus(),
+    API.getInventory(),
+  ]).then(function(results){
+    var prof = results[0];
+    var ach  = results[1];
+    var resp = results[2];
+    var inv  = results[3];
+    profileData = prof;
+    renderProfile(prof, ach, resp, inv);
+  }).catch(function(e){
+    document.getElementById('card-name').textContent = API.getHeroName() || 'HERO';
+    document.getElementById('card-name').style.color = 'var(--red)';
+    document.getElementById('card-title').textContent = 'BACKEND OFFLINE';
+  });
+}
+
+function renderProfile(prof, ach, resp, inv){
+  var p  = prof.profile;
+  var sc = prof.score;
+  var heroName = API.getHeroName() || p.hero_name || 'HERO';
+
+  // Rank calculation
+  var missionsDone = prof.missions_done || 0;
+  var rankIdx = Math.min(Math.floor(missionsDone / 7 * RANKS.length), RANKS.length-1);
+  if(p.ng_plus_level > 0) rankIdx = Math.min(rankIdx + p.ng_plus_level, RANKS.length-1);
+
+  // Hero card
+  document.getElementById('card-name').textContent   = heroName;
+  document.getElementById('card-title').textContent  = RANKS[rankIdx];
+  document.getElementById('card-sprite').textContent = SPRITES[rankIdx] || SPRITES[0];
+  document.getElementById('card-level').textContent  = Math.max(1, missionsDone + (p.battles_won||0) + (p.ng_plus_level*5));
+  document.getElementById('card-xp').textContent     = (sc.xp||0) + (ach.achievement_xp||0);
+  document.getElementById('card-kills').textContent  = sc.kills || 0;
+  document.getElementById('card-wins').textContent   = p.battles_won || 0;
+  document.getElementById('card-winrate').textContent= prof.win_rate + '%';
+
+  // NG+ badge
+  if(p.ng_plus_level > 0){
+    document.getElementById('ng-badge-wrap').innerHTML =
+      '<div class="ng-badge">NEW GAME+ '+p.ng_plus_level+'</div>';
+  }
+
+  // Rank display
+  document.getElementById('hero-rank-display').textContent = RANKS[rankIdx];
+  document.getElementById('rank-progress').textContent = rankIdx < RANKS.length-1
+    ? 'Next rank: '+RANKS[rankIdx+1]
+    : 'MAX RANK ACHIEVED';
+
+  // Combat stats
+  document.getElementById('s-battles').textContent  = p.total_battles || 0;
+  document.getElementById('s-won').textContent      = p.battles_won   || 0;
+  document.getElementById('s-lost').textContent     = p.battles_lost  || 0;
+  document.getElementById('s-perfect').textContent  = p.perfect_wins  || 0;
+  document.getElementById('s-damage').textContent   = p.total_damage  || 0;
+  document.getElementById('s-winrate').textContent  = prof.win_rate + '%';
+  document.getElementById('s-xp').textContent       = sc.xp || 0;
+  document.getElementById('s-kills').textContent    = sc.kills || 0;
+
+  // Missions
+  document.getElementById('s-missions').textContent = missionsDone + ' / 7';
+  document.getElementById('mission-prog').style.width = Math.round(missionsDone/7*100) + '%';
+
+  // Achievements
+  document.getElementById('s-ach').textContent     = ach.unlocked_count + ' / ' + ach.total;
+  document.getElementById('s-ach-xp').textContent  = ach.achievement_xp || 0;
+  document.getElementById('ach-prog').style.width  = Math.round(ach.unlocked_count/ach.total*100) + '%';
+
+  // Inventory
+  document.getElementById('s-inv').textContent = inv.items.length;
+  document.getElementById('s-atk').textContent = '+' + (prof.inventory.atk_bonus||0);
+  document.getElementById('s-def').textContent = '+' + (prof.inventory.def_bonus||0);
+  document.getElementById('s-hp').textContent  = '+' + (prof.inventory.hp_bonus||0);
+
+  // Equipped slots
+  var slots = {weapon:null,armor:null,accessory:null,relic:null};
+  inv.items.filter(function(i){return i.equipped;}).forEach(function(i){ slots[i.item_type]=i; });
+  var slotsEl = document.getElementById('equipped-slots');
+  slotsEl.innerHTML = ['weapon','armor','accessory','relic'].map(function(type){
+    var item = slots[type];
+    if(item){
+      var col = item.rarity==='legendary'?'#ff8800':item.rarity==='rare'?'#aa44ff':item.rarity==='uncommon'?'#4488ff':'#aa8800';
+      return '<div class="equip-slot filled">'+
+        '<div class="equip-slot-type">'+type.toUpperCase()+'</div>'+
+        '<div class="equip-slot-name" style="color:'+col+'">'+item.item_name+'</div>'+
+        '<div class="equip-slot-stats">ATK+'+item.atk_bonus+' DEF+'+item.def_bonus+' HP+'+item.hp_bonus+'</div>'+
+        '</div>';
+    }
+    return '<div class="equip-slot"><div class="equip-slot-type">'+type.toUpperCase()+'</div><div class="equip-slot-name" style="color:#444">[ EMPTY ]</div></div>';
+  }).join('');
+
+  // NG+ section
+  document.getElementById('ng-level').textContent = p.ng_plus_level || 0;
+  renderNgDots(p.ng_plus_level || 0);
+  document.getElementById('ng-status').textContent = p.ng_plus_level > 0
+    ? 'NG+ '+p.ng_plus_level+' active — enemies are '+(Math.round((1+(p.ng_plus_level*0.2))*100))+'% base strength'
+    : 'Defeat all 5 enemies to trigger NG+';
+
+  // NG+ enemy count
+  var defeated = Object.values(resp.enemies).filter(function(e){ return e.defeated && !e.respawned; }).length;
+  document.getElementById('ng-prog').style.width = Math.round(defeated/5*100) + '%';
+  document.getElementById('ng-enemies-text').textContent = defeated + ' / 5 enemies defeated this cycle';
+
+  // Respawn list
+  renderRespawn(resp);
+
+  // Battle history
+  renderHistory(prof.battle_history || []);
+}
+
+function renderNgDots(level){
+  var el = document.getElementById('ng-dots');
+  el.innerHTML = '';
+  for(var i=0;i<5;i++){
+    var dot = document.createElement('div');
+    dot.className = 'ng-dot' + (i < level ? ' done' : '');
+    el.appendChild(dot);
+  }
+}
+
+function renderRespawn(resp){
+  var el = document.getElementById('respawn-list');
+  var keys = ['MALKOR','POPUP_GENERAL','COOKIE_THIEF','DIALUP_DRAIN','CHAINMAIL_WORM'];
+  var html = '';
+  keys.forEach(function(key){
+    var e = resp.enemies[key];
+    var name = key.replace(/_/g,' ');
+    if(!e || !e.defeated){
+      html += '<div style="color:var(--green)">● '+name+'<br><span style="color:#333;font-size:12px;margin-left:12px">ALIVE — ready to fight</span></div>';
+    } else if(e.respawned){
+      html += '<div style="color:var(--yellow)" class="blink">● '+name+'<br><span style="color:#886600;font-size:12px;margin-left:12px">RESPAWNED — ready to fight</span></div>';
+    } else {
+      var h = Math.floor(e.respawns_in_seconds/3600);
+      var m = Math.floor((e.respawns_in_seconds%3600)/60);
+      html += '<div style="color:#444">☠ '+name+'<br><span style="color:#333;font-size:12px;margin-left:12px">Respawns in '+h+'h '+m+'m</span></div>';
+    }
+  });
+  el.innerHTML = html;
+}
+
+function renderHistory(history){
+  var el = document.getElementById('battle-history');
+  if(!history.length){
+    el.innerHTML = '<div style="font-family:\'VT323\',monospace;font-size:16px;color:#333;padding:10px 0;text-align:center">No battles recorded yet.</div>';
+    return;
+  }
+  el.innerHTML = history.map(function(b){
+    var date = b.fought_at ? b.fought_at.slice(0,10) : '?';
+    var ng   = b.ng_plus > 0 ? ' <span style="color:#ff8800;font-size:11px">NG+'+b.ng_plus+'</span>' : '';
+    var perf = b.perfect ? '<span class="perfect-badge">PERFECT</span>' : '';
+    var resultColor = b.result==='win' ? 'var(--green)' : 'var(--red)';
+    return '<div class="history-row '+b.result+'">'+
+      '<span class="enemy">'+b.enemy_key.replace(/_/g,' ')+'</span>'+
+      '<span style="font-family:\'VT323\',monospace;font-size:13px;color:#333">'+date+ng+'</span>'+
+      '<span class="result" style="color:'+resultColor+';text-align:center">'+b.result.toUpperCase()+'</span>'+
+      '<span class="num">'+b.damage_dealt+'</span>'+
+      '<span class="num">'+b.turns+'T '+perf+'</span>'+
+      '</div>';
+  }).join('');
+}
+
+function shareCard(){
+  var name  = document.getElementById('card-name').textContent;
+  var title = document.getElementById('card-title').textContent;
+  var xp    = document.getElementById('card-xp').textContent;
+  var kills = document.getElementById('card-kills').textContent;
+  var wins  = document.getElementById('card-wins').textContent;
+  var ng    = document.getElementById('ng-level').textContent;
+  var ach   = document.getElementById('s-ach').textContent;
+
+  var text = [
+    '=== CHOSEN-ONE-Y2K HERO CARD ===',
+    'HERO: '+name,
+    'RANK: '+title,
+    'XP: '+xp,
+    'KILLS: '+kills+' | WINS: '+wins,
+    'ACHIEVEMENTS: '+ach,
+    'NG+ LEVEL: '+ng,
+    'chosen-one-y2k.vercel.app',
+    '================================'
+  ].join('\n');
+
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){
+      document.getElementById('share-btn').textContent='[ COPIED TO CLIPBOARD! ]';
+      setTimeout(function(){ document.getElementById('share-btn').textContent='[ COPY HERO CARD TEXT ]'; },2000);
+    });
+  } else {
+    prompt('Copy your hero card:', text);
+  }
+  if(window.SFX) SFX.blip();
+}
+
+loadProfile();
+// Refresh respawn countdown every 60s
+setInterval(function(){
+  API.getRespawnStatus().then(function(resp){ renderRespawn(resp); }).catch(function(){});
+}, 60000);
+</script>
+</body>
+</html>
