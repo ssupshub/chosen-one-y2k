@@ -60,6 +60,14 @@
       "dest": "frontend/pages/mission-task.html"
     },
     {
+      "src": "/achievements",
+      "dest": "frontend/pages/achievements.html"
+    },
+    {
+      "src": "/profile",
+      "dest": "frontend/pages/profile.html"
+    },
+    {
       "src": "/assets/(.*)",
       "dest": "frontend/assets/$1"
     },
