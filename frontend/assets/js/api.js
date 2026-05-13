@@ -137,6 +137,39 @@ const API = (() => {
     return post(`/missions/${getSessionId()}/tasks/${missionIdx}/${taskIdx}`, {});
   }
 
+  // ── Achievements ────────────────────────────────────────────────────────
+  async function getAchievements() {
+    return get(`/achievements/${getSessionId()}`);
+  }
+  async function unlockAchievement(achievementId) {
+    return post(`/achievements/${getSessionId()}/unlock/${achievementId}`, {});
+  }
+  async function checkAchievements(state) {
+    return post(`/achievements/${getSessionId()}/check`, state);
+  }
+
+  // ── Enemy respawn + NG+ ──────────────────────────────────────────────────
+  async function getRespawnStatus() {
+    return get(`/respawn/${getSessionId()}`);
+  }
+  async function recordEnemyDefeat(enemyKey) {
+    return post(`/respawn/${getSessionId()}/defeat/${enemyKey}`, {});
+  }
+  async function getNgPlusStats(enemyKey) {
+    return get(`/respawn/${getSessionId()}/ng_plus_stats/${enemyKey}`);
+  }
+
+  // ── Hero profile ─────────────────────────────────────────────────────────
+  async function getProfile() {
+    return get(`/profile/${getSessionId()}`);
+  }
+  async function updateProfile(data) {
+    return post(`/profile/${getSessionId()}`, data);
+  }
+  async function recordBattle(data) {
+    return post(`/profile/${getSessionId()}/battle`, data);
+  }
+
   // ── Health ─────────────────────────────────────────────────────────────
   async function health() { return get("/health"); }
 
@@ -165,6 +198,15 @@ const API = (() => {
     getInventoryStats,
     getMissionTasks,
     completeMissionTask,
+    getAchievements,
+    unlockAchievement,
+    checkAchievements,
+    getRespawnStatus,
+    recordEnemyDefeat,
+    getNgPlusStats,
+    getProfile,
+    updateProfile,
+    recordBattle,
     health,
   };
 })();
