@@ -113,6 +113,48 @@ def init_db():
                 completed_at TEXT,
                 UNIQUE(session_id, mission_idx, task_idx)
             );
+
+            CREATE TABLE IF NOT EXISTS achievements (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id   TEXT NOT NULL,
+                achievement_id TEXT NOT NULL,
+                unlocked_at  TEXT DEFAULT (datetime('now')),
+                UNIQUE(session_id, achievement_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS enemy_respawn (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id   TEXT NOT NULL,
+                enemy_key    TEXT NOT NULL,
+                defeated_at  TEXT DEFAULT (datetime('now')),
+                ng_plus      INTEGER DEFAULT 0,
+                UNIQUE(session_id, enemy_key)
+            );
+
+            CREATE TABLE IF NOT EXISTS hero_profile (
+                session_id      TEXT PRIMARY KEY,
+                hero_name       TEXT DEFAULT 'HERO',
+                total_battles   INTEGER DEFAULT 0,
+                battles_won     INTEGER DEFAULT 0,
+                battles_lost    INTEGER DEFAULT 0,
+                perfect_wins    INTEGER DEFAULT 0,
+                total_damage    INTEGER DEFAULT 0,
+                ng_plus_level   INTEGER DEFAULT 0,
+                created_at      TEXT DEFAULT (datetime('now')),
+                updated_at      TEXT DEFAULT (datetime('now'))
+            );
+
+            CREATE TABLE IF NOT EXISTS battle_history (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id   TEXT NOT NULL,
+                enemy_key    TEXT NOT NULL,
+                result       TEXT NOT NULL,
+                damage_dealt INTEGER DEFAULT 0,
+                turns        INTEGER DEFAULT 0,
+                perfect      INTEGER DEFAULT 0,
+                ng_plus      INTEGER DEFAULT 0,
+                fought_at    TEXT DEFAULT (datetime('now'))
+            );
         """)
 
         # Seed guestbook if empty
@@ -688,6 +730,387 @@ def mission_task_complete(session_id, mission_idx, task_idx):
         conn.commit()
     return jsonify({"mission_idx": mission_idx, "task_idx": task_idx, "completed": True})
 
+
+
+# ---------------------------------------------------------------------------
+# ACHIEVEMENTS  /api/achievements
+# ---------------------------------------------------------------------------
+
+ACHIEVEMENT_CATALOG = {
+    # Battle achievements
+    "first_blood":      {"name":"FIRST BLOOD",          "desc":"Win your first battle",                    "rarity":"common",   "icon":"⚔️",  "xp":25},
+    "five_kills":       {"name":"KILLING SPREE",         "desc":"Defeat 5 enemies total",                   "rarity":"common",   "icon":"💀",  "xp":50},
+    "malkor_slain":     {"name":"VIRUS LORD SLAYER",     "desc":"Defeat MALKOR.EXE",                        "rarity":"legendary","icon":"👑",  "xp":500},
+    "perfect_win":      {"name":"FLAWLESS VICTORY",      "desc":"Win a battle without taking damage",       "rarity":"rare",     "icon":"✨",  "xp":150},
+    "three_perfect":    {"name":"UNTOUCHABLE",           "desc":"Win 3 battles without taking damage",      "rarity":"epic",     "icon":"🛡️", "xp":300},
+    "all_enemies":      {"name":"EXTERMINATOR",          "desc":"Defeat all 5 enemy types",                 "rarity":"rare",     "icon":"🏆",  "xp":200},
+    "ng_plus":          {"name":"NEW GAME+",             "desc":"Complete NG+ cycle 1",                     "rarity":"epic",     "icon":"🔄",  "xp":400},
+    "ng_plus_3":        {"name":"VETERAN CHOSEN ONE",    "desc":"Complete NG+ cycle 3",                     "rarity":"legendary","icon":"⚡",  "xp":750},
+    "special_attack":   {"name":"ULTIMATE USER",         "desc":"Use the SPECIAL move 10 times",            "rarity":"uncommon", "icon":"💥",  "xp":75},
+    "block_master":     {"name":"BLOCK MASTER",          "desc":"Block 20 attacks successfully",            "rarity":"uncommon", "icon":"🛡️", "xp":75},
+    # Mission achievements
+    "first_mission":    {"name":"MISSION ACCEPTED",      "desc":"Complete your first mission",              "rarity":"common",   "icon":"📋",  "xp":30},
+    "all_missions":     {"name":"MISSION ACCOMPLISHED",  "desc":"Complete all 7 missions",                  "rarity":"legendary","icon":"🌟",  "xp":600},
+    # Social achievements
+    "guestbook_signed": {"name":"SIGNED AND SEALED",     "desc":"Sign the guestbook",                       "rarity":"common",   "icon":"📖",  "xp":50},
+    "chat_active":      {"name":"COUNCIL MEMBER",        "desc":"Send 10 messages in alliance chat",        "rarity":"uncommon", "icon":"💬",  "xp":60},
+    # Inventory achievements
+    "legendary_item":   {"name":"LEGENDARY COLLECTOR",   "desc":"Obtain a legendary item",                  "rarity":"rare",     "icon":"🔮",  "xp":100},
+    "full_loadout":     {"name":"FULLY LOADED",          "desc":"Have all 4 item slots equipped",           "rarity":"uncommon", "icon":"⚙️",  "xp":80},
+    # Hidden achievements
+    "die_to_worm":      {"name":"EMBARRASSING DEFEAT",   "desc":"Lose a battle to CHAINMAIL_WORM",          "rarity":"common",   "icon":"🐛",  "xp":10},
+    "speedrun":         {"name":"SPEEDRUNNER",           "desc":"Win a battle in 3 turns or fewer",         "rarity":"rare",     "icon":"⚡",  "xp":120},
+    "visitor":          {"name":"JUST VISITING",         "desc":"Visit the site 10 times",                  "rarity":"common",   "icon":"👀",  "xp":20},
+}
+
+@app.route("/api/achievements/<session_id>", methods=["GET"])
+def achievements_get(session_id):
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT achievement_id, unlocked_at FROM achievements WHERE session_id=?",
+            (session_id,)
+        ).fetchall()
+    unlocked = {r["achievement_id"]: r["unlocked_at"] for r in rows}
+    result = []
+    for aid, ach in ACHIEVEMENT_CATALOG.items():
+        entry = dict(ach)
+        entry["id"]          = aid
+        entry["unlocked"]    = aid in unlocked
+        entry["unlocked_at"] = unlocked.get(aid)
+        result.append(entry)
+    total_xp = sum(ACHIEVEMENT_CATALOG[aid]["xp"] for aid in unlocked)
+    return jsonify({"achievements": result, "unlocked_count": len(unlocked),
+                    "total": len(ACHIEVEMENT_CATALOG), "achievement_xp": total_xp})
+
+@app.route("/api/achievements/<session_id>/unlock/<achievement_id>", methods=["POST"])
+def achievement_unlock(session_id, achievement_id):
+    if achievement_id not in ACHIEVEMENT_CATALOG:
+        return jsonify({"error": "unknown achievement"}), 404
+    with get_db() as conn:
+        existing = conn.execute(
+            "SELECT id FROM achievements WHERE session_id=? AND achievement_id=?",
+            (session_id, achievement_id)
+        ).fetchone()
+        if existing:
+            return jsonify({"already_unlocked": True, "achievement_id": achievement_id})
+        conn.execute(
+            "INSERT INTO achievements (session_id, achievement_id) VALUES (?,?)",
+            (session_id, achievement_id)
+        )
+        conn.commit()
+    ach = dict(ACHIEVEMENT_CATALOG[achievement_id])
+    ach["id"] = achievement_id
+    ach["newly_unlocked"] = True
+    return jsonify(ach), 201
+
+@app.route("/api/achievements/<session_id>/check", methods=["POST"])
+def achievements_check(session_id):
+    """Auto-check and unlock any earned achievements based on current state."""
+    data = request.get_json(force=True) or {}
+    newly_unlocked = []
+
+    with get_db() as conn:
+        # Get existing unlocked
+        existing = set(r["achievement_id"] for r in conn.execute(
+            "SELECT achievement_id FROM achievements WHERE session_id=?", (session_id,)
+        ).fetchall())
+
+        def unlock(aid):
+            if aid not in existing and aid in ACHIEVEMENT_CATALOG:
+                conn.execute(
+                    "INSERT OR IGNORE INTO achievements (session_id, achievement_id) VALUES (?,?)",
+                    (session_id, aid)
+                )
+                existing.add(aid)
+                ach = dict(ACHIEVEMENT_CATALOG[aid])
+                ach["id"] = aid
+                newly_unlocked.append(ach)
+
+        kills        = data.get("kills", 0)
+        battles_won  = data.get("battles_won", 0)
+        perfect_wins = data.get("perfect_wins", 0)
+        missions_done= data.get("missions_done", 0)
+        enemy_types  = data.get("enemy_types_defeated", [])
+        turns_last   = data.get("turns_last_battle", 99)
+        last_result  = data.get("last_result", "")
+        last_enemy   = data.get("last_enemy", "")
+        ng_level     = data.get("ng_plus_level", 0)
+        specials_used= data.get("specials_used", 0)
+        blocks_used  = data.get("blocks_used", 0)
+        inv_equipped = data.get("inventory_equipped", 0)
+        chat_msgs    = data.get("chat_messages_sent", 0)
+        has_legendary= data.get("has_legendary_item", False)
+        visit_count  = data.get("visit_count", 0)
+
+        if battles_won >= 1:                        unlock("first_blood")
+        if kills >= 5:                              unlock("five_kills")
+        if "MALKOR" in enemy_types:                unlock("malkor_slain")
+        if perfect_wins >= 1:                       unlock("perfect_win")
+        if perfect_wins >= 3:                       unlock("three_perfect")
+        if len(enemy_types) >= 5:                   unlock("all_enemies")
+        if ng_level >= 1:                           unlock("ng_plus")
+        if ng_level >= 3:                           unlock("ng_plus_3")
+        if specials_used >= 10:                     unlock("special_attack")
+        if blocks_used >= 20:                       unlock("block_master")
+        if missions_done >= 1:                      unlock("first_mission")
+        if missions_done >= 7:                      unlock("all_missions")
+        if last_result == "win" and turns_last <= 3:unlock("speedrun")
+        if last_result == "lose" and last_enemy == "CHAINMAIL_WORM": unlock("die_to_worm")
+        if inv_equipped >= 4:                       unlock("full_loadout")
+        if has_legendary:                           unlock("legendary_item")
+        if chat_msgs >= 10:                         unlock("chat_active")
+        if visit_count >= 10:                       unlock("visitor")
+
+        conn.commit()
+
+    return jsonify({"newly_unlocked": newly_unlocked, "count": len(newly_unlocked)})
+
+
+# ---------------------------------------------------------------------------
+# ENEMY RESPAWN + NEW GAME+  /api/respawn
+# ---------------------------------------------------------------------------
+
+RESPAWN_HOURS = 24   # hours before enemy respawns
+
+@app.route("/api/respawn/<session_id>", methods=["GET"])
+def respawn_status(session_id):
+    """Return defeat/respawn status for all enemies."""
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT * FROM enemy_respawn WHERE session_id=?", (session_id,)
+        ).fetchall()
+        profile = conn.execute(
+            "SELECT ng_plus_level FROM hero_profile WHERE session_id=?", (session_id,)
+        ).fetchone()
+
+    ng_level   = profile["ng_plus_level"] if profile else 0
+    now        = datetime.utcnow()
+    enemy_keys = ["MALKOR","POPUP_GENERAL","COOKIE_THIEF","DIALUP_DRAIN","CHAINMAIL_WORM"]
+    defeat_map = {r["enemy_key"]: r for r in rows}
+    result     = {}
+
+    for key in enemy_keys:
+        row = defeat_map.get(key)
+        if not row:
+            result[key] = {"defeated": False, "respawns_in_seconds": 0, "ng_plus": ng_level}
+        else:
+            defeated_at  = datetime.fromisoformat(row["defeated_at"])
+            respawn_time = defeated_at.replace(tzinfo=None)
+            elapsed_secs = (now - respawn_time).total_seconds()
+            respawn_secs = RESPAWN_HOURS * 3600
+            remaining    = max(0, respawn_secs - elapsed_secs)
+            result[key]  = {
+                "defeated":           True,
+                "defeated_at":        row["defeated_at"],
+                "respawns_in_seconds":int(remaining),
+                "respawned":          remaining == 0,
+                "ng_plus":            row["ng_plus"],
+            }
+
+    all_defeated = all(
+        result[k]["defeated"] and not result[k]["respawned"]
+        for k in enemy_keys
+    )
+
+    return jsonify({
+        "enemies":     result,
+        "ng_plus_level": ng_level,
+        "all_defeated": all_defeated,
+    })
+
+@app.route("/api/respawn/<session_id>/defeat/<enemy_key>", methods=["POST"])
+def respawn_defeat(session_id, enemy_key):
+    """Record an enemy as defeated."""
+    with get_db() as conn:
+        profile = conn.execute(
+            "SELECT ng_plus_level FROM hero_profile WHERE session_id=?", (session_id,)
+        ).fetchone()
+        ng_level = profile["ng_plus_level"] if profile else 0
+
+        conn.execute(
+            """INSERT INTO enemy_respawn (session_id, enemy_key, defeated_at, ng_plus)
+               VALUES (?,?,?,?)
+               ON CONFLICT(session_id, enemy_key)
+               DO UPDATE SET defeated_at=excluded.defeated_at, ng_plus=excluded.ng_plus""",
+            (session_id, enemy_key.upper(), datetime.utcnow().isoformat(), ng_level)
+        )
+
+        # Check if all 5 enemies are now defeated → trigger NG+
+        defeated_count = conn.execute(
+            """SELECT COUNT(*) FROM enemy_respawn
+               WHERE session_id=? AND ng_plus=?""",
+            (session_id, ng_level)
+        ).fetchone()[0]
+
+        ng_triggered = False
+        if defeated_count >= 5:
+            new_ng = ng_level + 1
+            conn.execute(
+                """INSERT INTO hero_profile (session_id, ng_plus_level, updated_at)
+                   VALUES (?,?,?)
+                   ON CONFLICT(session_id)
+                   DO UPDATE SET ng_plus_level=?, updated_at=?""",
+                (session_id, new_ng, datetime.utcnow().isoformat(),
+                 new_ng, datetime.utcnow().isoformat())
+            )
+            # Reset all enemy defeat records for new NG+ cycle
+            conn.execute(
+                "DELETE FROM enemy_respawn WHERE session_id=?", (session_id,)
+            )
+            ng_triggered = True
+
+        conn.commit()
+
+    return jsonify({
+        "enemy_key":    enemy_key.upper(),
+        "ng_triggered": ng_triggered,
+        "ng_level":     ng_level + (1 if ng_triggered else 0),
+    })
+
+@app.route("/api/respawn/<session_id>/ng_plus_stats/<enemy_key>", methods=["GET"])
+def ng_plus_stats(session_id, enemy_key):
+    """Return scaled enemy stats for current NG+ level."""
+    with get_db() as conn:
+        profile = conn.execute(
+            "SELECT ng_plus_level FROM hero_profile WHERE session_id=?", (session_id,)
+        ).fetchone()
+    ng = profile["ng_plus_level"] if profile else 0
+    scale = 1 + (ng * 0.2)   # +20% per NG+ level
+    return jsonify({"ng_plus_level": ng, "stat_multiplier": scale,
+                    "enemy_key": enemy_key.upper()})
+
+
+# ---------------------------------------------------------------------------
+# HERO PROFILE  /api/profile
+# ---------------------------------------------------------------------------
+
+@app.route("/api/profile/<session_id>", methods=["GET"])
+def profile_get(session_id):
+    with get_db() as conn:
+        profile  = conn.execute(
+            "SELECT * FROM hero_profile WHERE session_id=?", (session_id,)
+        ).fetchone()
+        score    = conn.execute(
+            "SELECT * FROM scores WHERE session_id=?", (session_id,)
+        ).fetchone()
+        ach_count= conn.execute(
+            "SELECT COUNT(*) FROM achievements WHERE session_id=?", (session_id,)
+        ).fetchone()[0]
+        ach_xp   = sum(
+            ACHIEVEMENT_CATALOG.get(r["achievement_id"], {}).get("xp", 0)
+            for r in conn.execute(
+                "SELECT achievement_id FROM achievements WHERE session_id=?", (session_id,)
+            ).fetchall()
+        )
+        inv_count= conn.execute(
+            "SELECT COUNT(*) FROM inventory WHERE session_id=?", (session_id,)
+        ).fetchone()[0]
+        equipped = conn.execute(
+            "SELECT SUM(atk_bonus) as atk, SUM(def_bonus) as def, SUM(hp_bonus) as hp "
+            "FROM inventory WHERE session_id=? AND equipped=1", (session_id,)
+        ).fetchone()
+        missions_done = conn.execute(
+            "SELECT COUNT(*) FROM missions WHERE session_id=? AND completed=1", (session_id,)
+        ).fetchone()[0]
+        history  = conn.execute(
+            "SELECT * FROM battle_history WHERE session_id=? ORDER BY fought_at DESC LIMIT 10",
+            (session_id,)
+        ).fetchall()
+
+    prof = row_to_dict(profile) if profile else {
+        "session_id": session_id, "hero_name": "HERO",
+        "total_battles": 0, "battles_won": 0, "battles_lost": 0,
+        "perfect_wins": 0, "total_damage": 0, "ng_plus_level": 0,
+    }
+    sc = row_to_dict(score) if score else {"xp": 0, "kills": 0}
+
+    win_rate = 0
+    if prof["total_battles"] > 0:
+        win_rate = round(prof["battles_won"] / prof["total_battles"] * 100)
+
+    return jsonify({
+        "profile":          prof,
+        "score":            sc,
+        "achievements":     {"unlocked": ach_count, "total": len(ACHIEVEMENT_CATALOG), "xp": ach_xp},
+        "inventory":        {"total": inv_count, "atk_bonus": equipped["atk"] or 0,
+                             "def_bonus": equipped["def"] or 0, "hp_bonus": equipped["hp"] or 0},
+        "missions_done":    missions_done,
+        "win_rate":         win_rate,
+        "battle_history":   rows_to_list(history),
+    })
+
+@app.route("/api/profile/<session_id>", methods=["POST"])
+def profile_update(session_id):
+    data = request.get_json(force=True) or {}
+    hero_name     = (data.get("hero_name") or "HERO").strip()
+    total_battles = int(data.get("total_battles") or 0)
+    battles_won   = int(data.get("battles_won") or 0)
+    battles_lost  = int(data.get("battles_lost") or 0)
+    perfect_wins  = int(data.get("perfect_wins") or 0)
+    total_damage  = int(data.get("total_damage") or 0)
+
+    with get_db() as conn:
+        conn.execute(
+            """INSERT INTO hero_profile
+               (session_id, hero_name, total_battles, battles_won, battles_lost,
+                perfect_wins, total_damage, updated_at)
+               VALUES (?,?,?,?,?,?,?,?)
+               ON CONFLICT(session_id) DO UPDATE SET
+               hero_name=excluded.hero_name,
+               total_battles=excluded.total_battles,
+               battles_won=excluded.battles_won,
+               battles_lost=excluded.battles_lost,
+               perfect_wins=excluded.perfect_wins,
+               total_damage=excluded.total_damage,
+               updated_at=excluded.updated_at""",
+            (session_id, hero_name, total_battles, battles_won, battles_lost,
+             perfect_wins, total_damage, datetime.utcnow().isoformat())
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT * FROM hero_profile WHERE session_id=?", (session_id,)
+        ).fetchone()
+    return jsonify(row_to_dict(row)), 201
+
+@app.route("/api/profile/<session_id>/battle", methods=["POST"])
+def profile_record_battle(session_id):
+    """Record a completed battle in history."""
+    data   = request.get_json(force=True) or {}
+    enemy  = (data.get("enemy_key") or "UNKNOWN").upper()
+    result = (data.get("result") or "").lower()
+    dmg    = int(data.get("damage_dealt") or 0)
+    turns  = int(data.get("turns") or 0)
+    perfect= 1 if data.get("perfect") else 0
+    ng     = int(data.get("ng_plus") or 0)
+
+    with get_db() as conn:
+        conn.execute(
+            """INSERT INTO battle_history
+               (session_id, enemy_key, result, damage_dealt, turns, perfect, ng_plus)
+               VALUES (?,?,?,?,?,?,?)""",
+            (session_id, enemy, result, dmg, turns, perfect, ng)
+        )
+        # Update profile counters
+        won  = 1 if result == "win" else 0
+        lost = 1 if result == "lose" else 0
+        conn.execute(
+            """INSERT INTO hero_profile
+               (session_id, hero_name, total_battles, battles_won, battles_lost,
+                perfect_wins, total_damage, updated_at)
+               VALUES (?,?,1,?,?,?,?,?)
+               ON CONFLICT(session_id) DO UPDATE SET
+               total_battles = total_battles + 1,
+               battles_won   = battles_won + ?,
+               battles_lost  = battles_lost + ?,
+               perfect_wins  = perfect_wins + ?,
+               total_damage  = total_damage + ?,
+               updated_at    = ?""",
+            (session_id, "HERO", won, lost, perfect, dmg, datetime.utcnow().isoformat(),
+             won, lost, perfect, dmg, datetime.utcnow().isoformat())
+        )
+        conn.commit()
+
+    return jsonify({"recorded": True, "result": result, "enemy": enemy}), 201
 
 # ---------------------------------------------------------------------------
 # Health check
