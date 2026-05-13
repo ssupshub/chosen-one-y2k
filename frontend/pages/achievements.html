@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ACHIEVEMENTS :: Chosen.net</title>
+<link rel="stylesheet" href="../../assets/css/style.css">
+<script src="../../assets/js/sounds.js"></script>
+<script src="../../assets/js/hero-setup.js"></script>
+<style>
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.ach-card{border:2px solid #222;background:#080808;padding:12px;position:relative;transition:all 0.15s}
+.ach-card.unlocked{background:#080600}
+.ach-card.locked{opacity:0.45;filter:grayscale(0.7)}
+.ach-card.legendary{border-color:#884400}
+.ach-card.epic{border-color:#660088}
+.ach-card.rare{border-color:#224488}
+.ach-card.uncommon{border-color:#114433}
+.ach-card.common{border-color:#333}
+.ach-card.unlocked.legendary{background:#0a0500;border-color:#ff8800}
+.ach-card.unlocked.epic{background:#080010;border-color:#aa44ff}
+.ach-card.unlocked.rare{background:#00040e;border-color:#4488ff}
+.ach-card.unlocked.uncommon{background:#00080a;border-color:#44aaaa}
+.ach-card.unlocked.common{background:#030303;border-color:#555}
+.ach-icon{font-size:28px;margin-bottom:6px;display:block;filter:grayscale(1)}
+.ach-card.unlocked .ach-icon{filter:none}
+.ach-name{font-family:'VT323',monospace;font-size:19px;letter-spacing:1px;margin-bottom:3px}
+.ach-desc{font-family:'VT323',monospace;font-size:14px;color:#555;line-height:1.4;margin-bottom:6px}
+.ach-card.unlocked .ach-desc{color:#888}
+.ach-rarity{font-family:'VT323',monospace;font-size:12px;padding:1px 6px;border:1px solid;display:inline-block}
+.ach-xp{font-family:'VT323',monospace;font-size:13px;color:#886600;float:right}
+.ach-date{font-family:'VT323',monospace;font-size:12px;color:#333;margin-top:4px}
+.ach-card.unlocked .ach-date{color:#555}
+.unlocked-badge{position:absolute;top:6px;right:8px;font-family:'VT323',monospace;font-size:12px;color:#886600;border:1px solid #553300;background:#0a0500;padding:1px 5px}
+.rarity-legendary{color:#ff8800}
+.rarity-epic{color:#aa44ff}
+.rarity-rare{color:#4488ff}
+.rarity-uncommon{color:#44aaaa}
+.rarity-common{color:#888}
+.filter-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.filter-tab{font-family:'VT323',monospace;font-size:15px;padding:3px 12px;border:1px solid #333;background:#000;color:#666;cursor:pointer}
+.filter-tab.active{background:#001100;color:var(--green);border-color:var(--green)}
+.progress-ring{text-align:center;padding:16px}
+.big-num{font-family:'Press Start 2P',monospace;font-size:28px;color:var(--yellow);display:block}
+.big-label{font-family:'VT323',monospace;font-size:16px;color:#666}
+/* unlock toast */
+.ach-toast{position:fixed;bottom:20px;right:20px;background:#0a0800;border:2px solid #884400;padding:14px 18px;z-index:9999;font-family:'VT323',monospace;animation:fadein 0.3s ease;max-width:300px}
+.ach-toast-icon{font-size:24px;margin-right:8px}
+.ach-toast-title{font-size:18px;color:var(--yellow);display:block}
+.ach-toast-name{font-size:16px;color:#ffaa00;display:block}
+.ach-toast-xp{font-size:14px;color:#886600;display:block}
+</style>
+</head>
+<body>
+<div class="marquee-wrap">
+  <div class="marquee-inner">*** ACHIEVEMENT HALL *** UNLOCK BY PLAYING *** SOME ARE HIDDEN *** DEFEAT ENEMIES, COMPLETE MISSIONS, SIGN THE GUESTBOOK ***</div>
+</div>
+<nav class="navbar">
+  <span class="navbar-title">[CHOSEN.NET]</span>
+  <a href="/">[HOME]</a>
+  <a href="/mission">[MISSION]</a>
+  <a href="/prophecy">[PROPHECY]</a>
+  <a href="/enemies">[ENEMY FILES]</a>
+  <a href="/weapons">[WEAPONS]</a>
+  <a href="/inventory">[INVENTORY]</a>
+  <a href="/achievements">[ACHIEVEMENTS]</a>
+  <a href="/profile">[PROFILE]</a>
+  <a href="/alliances">[ALLIANCES]</a>
+  <a href="/world">[WORLD MAP]</a>
+  <a href="/guestbook">[GUESTBOOK]</a>
+  <a href="/contact">[CONTACT]</a>
+</nav>
+<div class="page-header">
+  <h1 style="color:var(--yellow)">::: ACHIEVEMENT HALL :::</h1>
+  <div class="sub">UNLOCK BADGES BY PLAYING // 19 ACHIEVEMENTS // SOME HIDDEN</div>
+</div>
+<div class="sidebar-layout">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div class="panel panel-orange">
+      <div class="progress-ring">
+        <span class="big-num" id="unlocked-count">0</span>
+        <span class="big-label">/ <span id="total-count">19</span> UNLOCKED</span>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label">COMPLETION</div>
+        <div class="prog-bar"><div class="prog-fill amber" id="ach-prog" style="width:0%;transition:width 0.6s"></div></div>
+      </div>
+      <div style="font-family:'VT323',monospace;font-size:15px;color:#886600;text-align:center;margin-top:8px">
+        ACHIEVEMENT XP: <span style="color:var(--yellow)" id="ach-xp">0</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">::: RARITY COUNTS :::</div>
+      <div style="font-family:'VT323',monospace;font-size:15px;line-height:2">
+        <span class="rarity-legendary">■ LEGENDARY:</span> <span id="cnt-legendary">0</span><br>
+        <span class="rarity-epic">■ EPIC:</span> <span id="cnt-epic">0</span><br>
+        <span class="rarity-rare">■ RARE:</span> <span id="cnt-rare">0</span><br>
+        <span class="rarity-uncommon">■ UNCOMMON:</span> <span id="cnt-uncommon">0</span><br>
+        <span class="rarity-common">■ COMMON:</span> <span id="cnt-common">0</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">::: HOW TO UNLOCK :::</div>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:#555;line-height:1.8">
+        Win battles<br>
+        Defeat all enemies<br>
+        Complete missions<br>
+        Sign the guestbook<br>
+        Use special moves<br>
+        Win without damage<br>
+        Reach NG+ levels<br>
+        <span style="color:#333">...and some secrets</span>
+      </div>
+    </div>
+    <div class="panel">
+      <a href="/profile" class="btn btn-blue" style="display:block;text-align:center;text-decoration:none;font-size:12px;padding:6px">[ VIEW HERO PROFILE ]</a>
+    </div>
+  </div>
+  <div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="setFilter('all',this)">ALL</button>
+      <button class="filter-tab" onclick="setFilter('unlocked',this)">UNLOCKED</button>
+      <button class="filter-tab" onclick="setFilter('locked',this)">LOCKED</button>
+      <button class="filter-tab" onclick="setFilter('legendary',this)">LEGENDARY</button>
+      <button class="filter-tab" onclick="setFilter('epic',this)">EPIC</button>
+      <button class="filter-tab" onclick="setFilter('rare',this)">RARE</button>
+    </div>
+    <div class="ach-grid" id="ach-grid">
+      <div style="font-family:'VT323',monospace;font-size:18px;color:#333;text-align:center;padding:30px;grid-column:1/-1">Loading achievements...</div>
+    </div>
+  </div>
+</div>
+<div class="site-footer">
+  <div class="footer-text">(C) 2001 THE COUNCIL OF ELDERS | ALL RIGHTS RESERVED</div>
+</div>
+<script src="../../assets/js/api.js"></script>
+<script>
+var allAchievements = [];
+var currentFilter   = 'all';
+
+function loadAchievements(){
+  API.getAchievements().then(function(data){
+    allAchievements = data.achievements;
+    document.getElementById('unlocked-count').textContent = data.unlocked_count;
+    document.getElementById('total-count').textContent    = data.total;
+    document.getElementById('ach-xp').textContent        = data.achievement_xp;
+    document.getElementById('ach-prog').style.width      = Math.round(data.unlocked_count/data.total*100)+'%';
+
+    // Rarity counts
+    var counts = {legendary:0,epic:0,rare:0,uncommon:0,common:0};
+    data.achievements.filter(function(a){return a.unlocked;}).forEach(function(a){
+      if(counts[a.rarity]!==undefined) counts[a.rarity]++;
+    });
+    Object.keys(counts).forEach(function(r){
+      document.getElementById('cnt-'+r).textContent = counts[r];
+    });
+
+    renderAchievements();
+  }).catch(function(){
+    document.getElementById('ach-grid').innerHTML =
+      '<div style="font-family:\'VT323\',monospace;font-size:16px;color:var(--red);grid-column:1/-1;text-align:center;padding:20px">BACKEND OFFLINE — cannot load achievements.</div>';
+  });
+}
+
+function setFilter(f, btn){
+  currentFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+  renderAchievements();
+}
+
+function filteredAchs(){
+  return allAchievements.filter(function(a){
+    if(currentFilter==='all')      return true;
+    if(currentFilter==='unlocked') return a.unlocked;
+    if(currentFilter==='locked')   return !a.unlocked;
+    return a.rarity === currentFilter;
+  });
+}
+
+// Rarity order for sorting
+var RARITY_ORDER = {legendary:0,epic:1,rare:2,uncommon:3,common:4};
+
+function renderAchievements(){
+  var grid = document.getElementById('ach-grid');
+  var list = filteredAchs();
+
+  if(!list.length){
+    grid.innerHTML = '<div style="font-family:\'VT323\',monospace;font-size:18px;color:#333;text-align:center;padding:30px;grid-column:1/-1">NO ACHIEVEMENTS MATCH THIS FILTER.</div>';
+    return;
+  }
+
+  // Sort: unlocked first, then by rarity
+  list.sort(function(a,b){
+    if(a.unlocked !== b.unlocked) return b.unlocked - a.unlocked;
+    return (RARITY_ORDER[a.rarity]||4) - (RARITY_ORDER[b.rarity]||4);
+  });
+
+  grid.innerHTML = '';
+  list.forEach(function(ach){
+    var card = document.createElement('div');
+    card.className = 'ach-card ' + ach.rarity + (ach.unlocked?' unlocked':' locked');
+
+    var rarityColor = {
+      legendary:'#ff8800',epic:'#aa44ff',rare:'#4488ff',uncommon:'#44aaaa',common:'#888'
+    }[ach.rarity] || '#888';
+
+    var dateStr = '';
+    if(ach.unlocked && ach.unlocked_at){
+      dateStr = '<div class="ach-date">Unlocked: '+ach.unlocked_at.slice(0,10)+'</div>';
+    }
+
+    card.innerHTML =
+      (ach.unlocked ? '<div class="unlocked-badge">UNLOCKED</div>' : '') +
+      '<span class="ach-icon">'+(ach.unlocked ? ach.icon : '?')+'</span>' +
+      '<div class="ach-name" style="color:'+(ach.unlocked?rarityColor:'#333')+'">'+(ach.unlocked?ach.name:'???')+'</div>'+
+      '<div class="ach-desc">'+(ach.unlocked?ach.desc:'Keep playing to unlock.')+'</div>'+
+      '<span class="ach-rarity" style="color:'+rarityColor+';border-color:'+rarityColor+'">'+ach.rarity.toUpperCase()+'</span>'+
+      '<span class="ach-xp">+'+ach.xp+' XP</span>'+
+      dateStr;
+
+    grid.appendChild(card);
+  });
+}
+
+loadAchievements();
+// Refresh every 15s so newly unlocked achievements appear
+setInterval(loadAchievements, 15000);
+</script>
+</body>
+</html>
