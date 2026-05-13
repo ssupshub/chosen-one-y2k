@@ -171,6 +171,8 @@ HERO</div>
   <a href="/enemies" class="active">[ENEMY FILES]</a>
   <a href="/weapons">[WEAPONS]</a>
   <a href="/inventory">[INVENTORY]</a>
+  <a href="/achievements">[ACHIEVEMENTS]</a>
+  <a href="/profile">[PROFILE]</a>
   <a href="/alliances">[ALLIANCES]</a>
   <a href="/world">[WORLD MAP]</a>
   <a href="/guestbook">[GUESTBOOK]</a>
@@ -322,6 +324,42 @@ var ENEMIES={MALKOR:{name:'MALKOR.EXE',maxHp:500,atk:[18,28],defense:8,speed:0.4
 var HERO_MOVES=[{id:'punch',label:'PUNCH',dmg:[8,15],spCost:0,spGain:15,desc:'Fast jab'},{id:'kick',label:'KICK',dmg:[12,22],spCost:0,spGain:20,desc:'Solid kick'},{id:'hack',label:'HACK',dmg:[20,35],spCost:0,spGain:25,desc:'Slow but powerful'},{id:'block',label:'BLOCK',dmg:[0,0],spCost:0,spGain:10,desc:'Reduce dmg 70%'},{id:'dodge',label:'DODGE',dmg:[0,0],spCost:0,spGain:12,desc:'Avoid attack 60%'},{id:'special',label:'SPECIAL',dmg:[40,60],spCost:100,spGain:0,desc:'ULTIMATE (full bar)'}];
 var BS={active:false,enemyKey:null,enemy:null,heroHp:0,heroMaxHp:100,enemyHp:0,enemyMaxHp:0,heroSp:0,enemySp:0,round:1,heroStatuses:[],enemyStatuses:[],heroBlocking:false,heroDodging:false,busy:false,enemyRage:false,wins:0,losses:0,totalDmgDealt:0,turnCount:0,currentEnemyCard:null,currentBattleBtn:null};
 var kills=0,totalXP=0;
+var sessionStats={battlesWon:0,battlesLost:0,perfectWins:0,specialsUsed:0,blocksUsed:0,enemyTypesDefeated:[]};
+var ngPlusLevel=0;
+var ngMultiplier=1.0;
+
+// Load NG+ level on page load
+function loadNgLevel(){
+  API.getRespawnStatus().then(function(d){
+    ngPlusLevel   = d.ng_plus_level || 0;
+    ngMultiplier  = 1 + (ngPlusLevel * 0.2);
+    if(ngPlusLevel > 0){
+      var bar = document.querySelector('.marquee-inner');
+      if(bar) bar.textContent = '*** NEW GAME+ LEVEL '+ngPlusLevel+' ACTIVE *** ENEMIES ARE '+Math.round(ngMultiplier*100)+'% STRONGER *** DEFEAT ALL 5 TO ADVANCE *** '+bar.textContent;
+    }
+    // Update enemy cards that are respawned or still defeated
+    Object.keys(d.enemies).forEach(function(key){
+      var info = d.enemies[key];
+      var card = document.querySelector('[data-name="'+key+'"]');
+      if(!card) return;
+      if(info.defeated && !info.respawned){
+        card.dataset.defeated = 'true';
+        card.style.opacity    = '0.5';
+        var btn = card.querySelector('button');
+        if(btn){
+          var secs = info.respawns_in_seconds;
+          var hrs  = Math.floor(secs/3600);
+          var mins = Math.floor((secs%3600)/60);
+          btn.textContent = '[ RESPAWNS IN '+hrs+'h '+mins+'m ]';
+          btn.disabled    = true;
+          btn.style.background='#001100';
+          btn.style.color='#004400';
+        }
+      }
+    });
+  }).catch(function(){});
+}
+loadNgLevel();
 
 function startBattle(btn,eKey){
   var e=ENEMIES[eKey];if(!e)return;
@@ -483,7 +521,7 @@ function resolveHero(move){
   }
   if(move.id==='special'){
     if(BS.heroSp<100){battleLog('system','SPECIAL BAR NOT FULL!');BS.busy=false;setButtonsEnabled(true);return;}
-    BS.heroSp=0;
+    BS.heroSp=0;sessionStats.specialsUsed++;
     var d=rollDmg(move.dmg[0],move.dmg[1]);var c=isCrit(0.3);if(c)d=Math.floor(d*1.8);
     showSpecialFX('ULTIMATE!!!','#ffff00');
     anim('enemy-sprite','anim-hit-r',500);anim('hero-sprite','anim-jump',400);
@@ -546,7 +584,7 @@ function enemyTurn(stunned,callback){
   }
 
   var moveName=BS.enemy.moves[Math.floor(Math.random()*BS.enemy.moves.length)];
-  var d=rollDmg(BS.enemy.atk[0],BS.enemy.atk[1]);
+  var d=rollDmg(Math.floor(BS.enemy.atk[0]*ngMultiplier),Math.floor(BS.enemy.atk[1]*ngMultiplier));
   if(BS.enemyRage)d=Math.floor(d*1.5);
   var c=isCrit(BS.enemy.critChance);if(c)d=Math.floor(d*1.6);
 
@@ -599,6 +637,58 @@ function battleWin(){
     document.getElementById('killcount').textContent=kills;
     API.postEvent('BATTLEFIELD',BS.enemy.name+' defeated by '+API.getHeroName()).catch(function(){});
     API.updateScore(totalXP,kills).catch(function(){});
+
+    // Record battle in profile
+    var isPerfect = (BS.heroHp === BS.heroMaxHp);
+    if(isPerfect) sessionStats.perfectWins++;
+    sessionStats.battlesWon++;
+    if(sessionStats.enemyTypesDefeated.indexOf(BS.enemyKey)===-1)
+      sessionStats.enemyTypesDefeated.push(BS.enemyKey);
+    API.recordBattle({
+      enemy_key:    BS.enemyKey,
+      result:       'win',
+      damage_dealt: BS.totalDmgDealt,
+      turns:        BS.turnCount,
+      perfect:      isPerfect,
+      ng_plus:      ngPlusLevel
+    }).catch(function(){});
+
+    // Record enemy defeat for respawn system
+    API.recordEnemyDefeat(BS.enemyKey).then(function(d){
+      if(d.ng_triggered){
+        ngPlusLevel  = d.ng_level;
+        ngMultiplier = 1 + (ngPlusLevel * 0.2);
+        setTimeout(function(){
+          showSpecialFX('NEW GAME+ '+ngPlusLevel+'!','#ff8800');
+          battleLog('system','ALL ENEMIES DEFEATED! NEW GAME+ ACTIVATED! Enemies are now '+Math.round(ngMultiplier*100)+'% stronger!');
+        }, 2000);
+      }
+    }).catch(function(){});
+
+    // Check achievements
+    API.checkAchievements({
+      kills:               kills,
+      battles_won:         sessionStats.battlesWon,
+      perfect_wins:        sessionStats.perfectWins,
+      enemy_types_defeated:sessionStats.enemyTypesDefeated,
+      turns_last_battle:   BS.turnCount,
+      last_result:         'win',
+      last_enemy:          BS.enemyKey,
+      ng_plus_level:       ngPlusLevel,
+      specials_used:       sessionStats.specialsUsed,
+      blocks_used:         sessionStats.blocksUsed
+    }).then(function(d){
+      if(d.newly_unlocked && d.newly_unlocked.length){
+        d.newly_unlocked.forEach(function(ach,i){
+          setTimeout(function(){
+            var col = ach.rarity==='legendary'?'#ff8800':ach.rarity==='epic'?'#aa00ff':ach.rarity==='rare'?'#aa44ff':'#aaaaaa';
+            showSpecialFX('ACHIEVEMENT!',''+col);
+            battleLog('system','ACHIEVEMENT UNLOCKED: '+ach.name+' +'+ach.xp+' XP!');
+          }, i*1200);
+        });
+      }
+    }).catch(function(){});
+
     // Roll for item drops
     API.rollEnemyDrops(BS.enemyKey).then(function(data){
       if(data.drops && data.drops.length){
@@ -618,6 +708,11 @@ function battleWin(){
 
 function battleLose(){
   BS.active=false;BS.losses++;
+  sessionStats.battlesLost++;
+  API.recordBattle({enemy_key:BS.enemyKey,result:'lose',damage_dealt:BS.totalDmgDealt,turns:BS.turnCount,perfect:false,ng_plus:ngPlusLevel}).catch(function(){});
+  API.checkAchievements({kills:kills,battles_won:sessionStats.battlesWon,perfect_wins:sessionStats.perfectWins,enemy_types_defeated:sessionStats.enemyTypesDefeated,last_result:'lose',last_enemy:BS.enemyKey,ng_plus_level:ngPlusLevel,specials_used:sessionStats.specialsUsed,blocks_used:sessionStats.blocksUsed}).then(function(d){
+    if(d.newly_unlocked&&d.newly_unlocked.length){d.newly_unlocked.forEach(function(ach){battleLog('system','ACHIEVEMENT: '+ach.name);});}
+  }).catch(function(){});
   announceRound('K.O.!!!',function(){
     anim('hero-sprite','anim-ko',800);showSpecialFX('GAME OVER!','#ff0000');
     if(window.SFX)SFX.bloop();
